@@ -19,7 +19,7 @@ THAN PERIOD, AS A HYPERPARAMETER
 
 import numpy as np
 import scipy.spatial
-from GaussianProcesses.GPKernelFunctions import EuclideanDist, EuclideanDist2
+from Infer.GPKernelFunctions import EuclideanDist, EuclideanDist2
 
 def PeriodicSqExponentialRad(X, Y, theta, white_noise = False):
   """
