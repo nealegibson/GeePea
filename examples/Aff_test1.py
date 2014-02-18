@@ -5,9 +5,8 @@ import pylab
 import os
 
 import Infer
-import MyMCMC
-from MyFunctions import Transit_aRs
-from MyFunctions import LogLikelihood_iid_mf
+from MyFuncs import Transit_aRs
+from MyFuncs import LogLikelihood_iid_mf
 
 def Posterior(p,*args):
   if p[-1] < 0.: return -np.inf

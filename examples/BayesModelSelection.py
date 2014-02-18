@@ -5,8 +5,7 @@ import pylab
 import os
 
 import Infer
-import MyMCMC
-from MyFunctions import LogLikelihood_iid_mf
+from MyFuncs import LogLikelihood_iid_mf
 
 #define some polynomials
 def Model1(p,x):

@@ -1,5 +1,5 @@
 
-Python module to implement Bayesian inference routines.
+Infer: Python module to implement Bayesian inference routines.
 
 Neale Gibson
 ngibson@eso.org

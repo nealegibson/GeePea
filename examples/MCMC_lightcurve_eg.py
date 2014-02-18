@@ -6,8 +6,8 @@ import os
 
 import Infer
 import MyMCMC
-from MyFunctions import Transit_aRs
-from MyFunctions import LogLikelihood_iid_mf
+from MyFuncs import Transit_aRs
+from MyFuncs import LogLikelihood_iid_mf
 
 #light curve parameters
 lc_pars = [2454000.0,2.5,11.,.1,0.6,0.2,0.3,1.,0.]

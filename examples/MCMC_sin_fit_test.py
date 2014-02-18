@@ -6,7 +6,6 @@ np.seterr(divide='ignore') #ignore errors in log division
 np.seterr(all='ignore') #ignore errors in log division
 import sys
 
-import MyMCMC
 import Infer
 
 #define log likelihood (i.i.d.) function (after subtracting mean function)

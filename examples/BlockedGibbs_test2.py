@@ -6,7 +6,7 @@ from scipy.stats.distributions import gamma,norm as norm_dist
 import IPython
 
 import Infer
-from MyFunctions import Transit_aRs
+from MyFuncs import Transit_aRs
 
 #light curve parameters
 lc_pars = [.0,2.5,11.,.1,0.6,0.2,0.3,1.,0.]

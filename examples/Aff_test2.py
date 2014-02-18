@@ -5,9 +5,8 @@ import pylab
 import os
 
 import Infer
-import MyMCMC
-from MyFunctions import Transit_aRs
-from MyFunctions import LogLikelihood_iid_mf
+from MyFuncs import Transit_aRs
+from MyFuncs import LogLikelihood_iid_mf
 
 #define a test function: 2D Rosenbrock function (inverted)
 def InvRosenbrock(p):

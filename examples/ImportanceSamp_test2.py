@@ -5,7 +5,6 @@ import pylab
 import os
 
 import Infer
-import MyMCMC
 
 def LogNormalDist(p,m,invK,logdetK):
   #mean subtract the vector

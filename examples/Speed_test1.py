@@ -9,8 +9,7 @@ import time
 import pylab
 
 import Infer
-import MyMCMC
-from MyFunctions import Transit_aRs
+from MyFuncs import Transit_aRs
 
 #light curve parameters
 lc_pars = [.0,2.5,11.,.1,0.6,0.2,0.3,1.,0.]
