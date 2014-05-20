@@ -2,7 +2,8 @@
 Infer module docstring...
 """
 
-from MCMC import *
+from MCMC import MCMC
+from MCMC_SimN import MCMC_N
 from MCMC_utils import *
 from ImportanceSampling import *
 from Conditionals import *

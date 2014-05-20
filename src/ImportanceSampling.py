@@ -50,7 +50,7 @@ def ImportanceSamp(Posterior,post_args,m,K,no_samples,filename="ImSamp"):
   
   #calculate difference between maximum likelihoods (used to ease numerical calculations)
   Z_diff = Posterior(m,*post_args) - NormalDist(ms,invKs,logdetKs,ms)
-  print " log Bayes evidence from Gauss =", Z_diff
+#  print " log Bayes evidence from Gauss =", Z_diff
   
   #loop over samples and calculate the probabilities
   start = time.time() 
@@ -65,7 +65,7 @@ def ImportanceSamp(Posterior,post_args,m,K,no_samples,filename="ImSamp"):
     #print PostProb[i],PropProb[i]
   print " t = %.2f s" % (time.time()-start)
   print '-' * 80
-
+  
   #Calculate importance weights
   Weights = np.exp(PostProb - PropProb)
   
@@ -90,7 +90,7 @@ def ImportanceSamp(Posterior,post_args,m,K,no_samples,filename="ImSamp"):
   
   #Analyse the Importance samples
   return AnalyseImportanceSamp(Z_diff,filename)
-    
+  
 ##########################################################################################
 
 def AnalyseImportanceSamp(Z_diff=0,filename="ImSamp",filter=None):
@@ -106,7 +106,7 @@ def AnalyseImportanceSamp(Z_diff=0,filename="ImSamp",filter=None):
     index_list = [np.arange(q,Data[:,0].size,filter) for q in range(filter)]
 
   for index in index_list:
-
+    
     Weights = Data[:,0][index]
     Z_ratio = np.mean(Weights)
     w = Weights / Weights.sum()
@@ -139,7 +139,7 @@ def BayesFactor(logE1, logE2, H1='H1', H2='H2'):
 
 ##########################################################################################
 
-def NormalFromMCMC(conv_length,n_chains=None,chain_filenames=None,plot=False):
+def NormalFromMCMC(conv_length,n_chains=None,chain_filenames=None,plot=False,ret_evidence=False,ret_BIC=False,N_obs=False):
   """
   Need a simple function to get the covariance matrix from a set of MCMC chains...
 
@@ -165,7 +165,26 @@ def NormalFromMCMC(conv_length,n_chains=None,chain_filenames=None,plot=False):
   print " par = mean +- gauss_err"
   for i in range(m.size): #loop over parameters and get parameters, errors, and GR statistic
     print " p[%d] = %.7f +- %.7f" % (i,m[i],np.sqrt(K[i,i]))
-
+  
+  print "Gaussian Evidence approx:"
+  logP_max = X[:,0].max() # get maximum log posterior/likelihood
+  #first must compress the covariance matrix as some parameters are fixed!
+  var_par = np.diag(K)>0
+  Ks = K.compress(var_par,axis=0)
+  Ks = Ks.compress(var_par,axis=1)
+  D = np.diag(Ks).size
+  ms = m[var_par]
+  sign,logdetK = np.linalg.slogdet( 2*np.pi*Ks ) # get log determinant
+  logE = logP_max + 0.5 * logdetK #get evidence approximation based on Gaussian assumption
+  print "log ML =", logP_max
+  print "log E =", logE
+  
+  if not N_obs:
+    print "For BIC evidence N_obs must be provided"
+  else:
+    logE_BIC = logP_max - D/2.*np.log(N_obs)
+    print "log E (BIC) =", logE_BIC, "(D = {}, N = {})".format(D,N_obs)
+  
   if plot:
     p=np.where(np.diag(K)>0)[0]
     no_pars = p.size
@@ -201,7 +220,10 @@ def NormalFromMCMC(conv_length,n_chains=None,chain_filenames=None,plot=False):
         if q == 0: pylab.ylabel(labels[i])
         if i == (no_pars-1): pylab.xlabel(labels[q])
   
-  return m,K
+  r = [m,K]
+  if ret_evidence: r.append(logE)
+  if ret_BIC: r.append(logE_BIC)
+  return r
 
 ##########################################################################################
 

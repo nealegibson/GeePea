@@ -72,7 +72,7 @@ def QuasiPeriodicSqExponentialRad(X, Y, theta, white_noise = False, grad_output=
   """
   # Calculate distance matrix without scaling
   D = EuclideanDist(X,Y)
-
+  
   # Scale to make it periodic  
   Dscaled = np.pi * D * theta[1]  
 

@@ -7,7 +7,7 @@ import pylab
 
 ###############################################################################
 
-def AnalyseChains(conv_length,n_chains=None,chain_filenames=None,log_proposal=False,return_GR=False,return_assym=False):
+def AnalyseChains(conv_length,n_chains=None,chain_filenames=None,log_proposal=False,return_GR=False,return_assym=False,N_obs=None,return_ev=False,return_BIC=False):
   """
   Get mean, median plus uncertainties from the MCMC chains, and calculate GR statistic
   for multiple chains.
@@ -39,11 +39,45 @@ def AnalyseChains(conv_length,n_chains=None,chain_filenames=None,log_proposal=Fa
 #    print u" p[%d] = %.7f \u00B1 %.7f [%.7f +%.7f -%.7f]: GR = %.4f%s" % (i,mean[i],gauss_err[i],med,pos_err,neg_err,GR,log_p_str)
     log_p_str = ", dlogp = %f" % ((np.log10(mean[i]+pos_err[i]) - np.log10(mean[i]-neg_err[i]))/2.) if log_proposal else ""
     print " p[%d] = %.7f +- %.7f [%.7f +%.7f -%.7f]: GR = %.4f%s" % (i,mean[i],gauss_err[i],med,pos_err[i],neg_err[i],GR[i],log_p_str)
-    
-  if return_GR and not return_assym: return mean,gauss_err,GR
-  elif not return_GR and return_assym: return mean,gauss_err,neg_err,pos_err
-  elif return_GR and return_assym: return mean,gauss_err,GR,neg_err,pos_err
-  else: return mean,gauss_err
+  
+  #return the Evidence approximation from Gaussian assumption
+  #merge files into large matrix
+  X = np.load(chain_filenames[0]+'.npy')[conv_length:] #read in data file  
+  for i in range(1,len(chain_filenames)):
+    X = np.concatenate((X,np.load(chain_filenames[i]+'.npy')[conv_length:]))
+  #get the mean and covariance matrix
+  m = X[:,1:].mean(axis=0)
+  K = np.cov(X[:,1:]-m,rowvar=0) #better to mean subtract first to avoid rounding errors
+  #get max likelihood
+  logP_max = X[:,0].max()
+  #first must compress the covariance matrix as some parameters are fixed!
+  var_par = np.diag(K)>0
+  Ks = K.compress(var_par,axis=0);Ks = Ks.compress(var_par,axis=1)
+  D = np.diag(Ks).size
+#  ms = m[var_par]
+  sign,logdetK = np.linalg.slogdet( 2*np.pi*Ks ) # get log determinant
+  logE = logP_max + 0.5 * logdetK #get evidence approximation based on Gaussian assumption
+  print "Gaussian Evidence approx:"
+  print " log ML =", logP_max
+  print " log E =", logE
+  if not N_obs:
+    logE_BIC = logP_max
+    print " log E (BIC) =", logP_max, "- {}/2.*np.log(N)".format(D)
+  else:
+    logE_BIC = logP_max - D/2.*np.log(N_obs)
+    print " log E (BIC) =", logE_BIC, "(D = {}, N = {})".format(D,N_obs)
+  
+  ret_list = [mean,gauss_err]
+  if return_GR: ret_list.append(GR)
+  if return_assym: ret_list.append(neg_err);ret_list.append(pos_err)
+  if return_ev: ret_list.append(logE)
+  if return_BIC: ret_list.append(logE_BIC)
+  return ret_list
+  
+#   if return_GR and not return_assym: return mean,gauss_err,GR
+#   elif not return_GR and return_assym: return mean,gauss_err,neg_err,pos_err
+#   elif return_GR and return_assym: return mean,gauss_err,GR,neg_err,pos_err
+#   else: return mean,gauss_err
   
 ###############################################################################
 

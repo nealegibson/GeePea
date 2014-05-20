@@ -43,7 +43,7 @@ def SqExponentialARD(X,Y,theta,white_noise=False):
   theta[1:-1] - inverse length scales (1/2l_i^2) for each input vector in X,Y
   theta[-1] - white noise standard deviation if white_noise=True 
   
-  X,Y - input matricies
+  X,Y - input matrices
   
   """
   
@@ -137,6 +137,38 @@ def ExponentialARD(X,Y,theta,white_noise=False):
   return np.matrix(K)
 
 ####################################################################################################
+def SqExponentialSum(X,Y,theta,white_noise=False):
+  """
+  Squared exponential function with independent basis components
+  (with height scale and inverse length scale for each input in X vectors).
+  
+  k(x,x') = Sum th_i^2 * exp( n_i * (x_i-x_i')^2 ) [+ sigma^2 delta_']
+  
+  theta[0+n,1+n] - height scale, inverse length scale pairs
+  theta[-1] - white noise standard deviation if white_noise=True 
+  
+  X,Y - input matricies
+  
+  """
+  #Calculate distance matrix with scaling - multiply each coord by sqrt(eta)
+  m,n = X.shape
+  #ensure inputs are matrices - otherwise EuclideanDist fails for 1D
+  assert type(X) is np.matrixlib.defmatrix.matrix 
+  assert type(Y) is np.matrixlib.defmatrix.matrix 
+  
+  K = np.zeros((m,m))
+  #sum over the input vectors
+  for i in range(n):
+    D2 = EuclideanDist2( np.mat(X[:,i]),np.mat(Y[:,i]),v=[np.sqrt(np.abs(theta[2*i+1]))])
+    K += theta[2*i]**2 * np.exp( -D2 )
+    
+  #Add white noise
+  if white_noise == True: K += np.identity(m) * (theta[-1]**2)
+
+  return np.matrix(K)
+####################################################################################################
+
+
 #Rational quadratic - not tested
 def RationalQuadRad(X, Y, theta, white_noise = False):
   """
@@ -237,7 +269,7 @@ def MaternARD(X,Y,theta,white_noise=False):
   theta[-1] - white noise
   
   """
-
+  
   #Calculate distance matrix with scaling
   D = EuclideanDist(X,Y,v=theta[2:-1])
   

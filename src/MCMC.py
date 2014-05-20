@@ -77,12 +77,12 @@ def MCMC(LogPosterior,gp,post_args,ch_len,ep,chain_filenames=['MCMC_chain'],n_ch
 #      p_prop = p_acc + RandArr[i] * e * G #for diag covariance matrix
       p_prop = p_acc + RandArr[i] #this line has the largest (extra) overhead from C -> python version
       L_prop = LogPosterior(p_prop,*post_args)
-
+      
       #Metropolis algorithm to accept step
       if np.random.rand() < np.exp(L_prop - L_acc):
         p_acc,L_acc = p_prop,L_prop
         AccArr[i] = 1 #update acceptance array
-
+      
       #add new posterior and parameters to chain
       if i%thin==0: ParArr[i/thin],PostArr[i/thin] = p_acc,L_acc
       
@@ -105,7 +105,7 @@ def MCMC(LogPosterior,gp,post_args,ch_len,ep,chain_filenames=['MCMC_chain'],n_ch
     ####### end individual chain ###########
     PrintBar(n,chain,i,ch_len,AccArr,start); print
     np.save(chain+".npy",np.concatenate([PostArr.reshape(PostArr.size,1),ParArr],axis=1))
-
+  
   ####### end loop over chains ############
   print '-' * 80
   

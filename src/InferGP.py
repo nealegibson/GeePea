@@ -371,7 +371,7 @@ class GP(object):
           self.mf_args_pred = self.kfVec_pred()
     else:
       self.mf_args_pred = x
-
+    
     pylab.plot(self.mf_args_pred,self.MeanFunctionPred()*np.ones(self.mf_args_pred.size),'r--')
   
   def Plot(self):
