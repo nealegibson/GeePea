@@ -168,7 +168,6 @@ def SqExponentialSum(X,Y,theta,white_noise=False):
   return np.matrix(K)
 ####################################################################################################
 
-
 #Rational quadratic - not tested
 def RationalQuadRad(X, Y, theta, white_noise = False):
   """
@@ -185,7 +184,7 @@ def RationalQuadRad(X, Y, theta, white_noise = False):
 
   # Calculate distance matrix without scaling
   D2 = EuclideanDist2(X, Y)
-
+  
   # Calculate covariance matrix
   K = theta[0]**2 * (1 + (D2 / (2.*theta[1]*(theta[2]**2.)) ) )**(-theta[1])
 

@@ -7,7 +7,7 @@ import pylab
 
 ###############################################################################
 
-def AnalyseChains(conv_length,n_chains=None,chain_filenames=None,log_proposal=False,return_GR=False,return_assym=False,N_obs=None,return_ev=False,return_BIC=False):
+def AnalyseChains(conv_length,n_chains=None,chain_filenames=None,log_proposal=False,return_GR=False,return_assym=False,N_obs=None,return_ev=False,return_BIC=False,return_AIC=False):
   """
   Get mean, median plus uncertainties from the MCMC chains, and calculate GR statistic
   for multiple chains.
@@ -67,11 +67,19 @@ def AnalyseChains(conv_length,n_chains=None,chain_filenames=None,log_proposal=Fa
     logE_BIC = logP_max - D/2.*np.log(N_obs)
     print " log E (BIC) =", logE_BIC, "(D = {}, N = {})".format(D,N_obs)
   
+  if not N_obs:
+    logE_AIC = logP_max - D
+    print " log E (AIC) =", logE_AIC, "(D = {}, no n corr used!)".format(D)
+  else:
+    logE_AIC = logP_max - D * N_obs / (N_obs-D-1.)
+    print " log E (AIC) =", logE_AIC, "(D = {}, N = {})".format(D,N_obs)
+  
   ret_list = [mean,gauss_err]
   if return_GR: ret_list.append(GR)
   if return_assym: ret_list.append(neg_err);ret_list.append(pos_err)
   if return_ev: ret_list.append(logE)
   if return_BIC: ret_list.append(logE_BIC)
+  if return_AIC: ret_list.append(logE_AIC)
   return ret_list
   
 #   if return_GR and not return_assym: return mean,gauss_err,GR
