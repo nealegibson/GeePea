@@ -306,7 +306,7 @@ def EuclideanDist(X1,X2,v=None):
   #ensure inputs are in matrix form
   X1,X2 = np.matrix(X1), np.matrix(X2)
   
-  if v != None: #scale each coord in Xs by the weight vector
+  if v is not None: #scale each coord in Xs by the weight vector
     V = np.abs(np.matrix( np.diag(v) ))
     X1 = X1 * V
     X2 = X2 * V
@@ -329,7 +329,7 @@ def EuclideanDist2(X1,X2,v=None):
   #ensure inputs are in matrix form
   X1,X2 = np.matrix(X1), np.matrix(X2)
   
-  if v != None: #scale each coord in Xs by the weight vector
+  if v is not None: #scale each coord in Xs by the weight vector
     V = np.abs(np.matrix( np.diag(v) ))
     X1 = X1 * V
     X2 = X2 * V

@@ -54,14 +54,14 @@ class GP(object):
     self.mf_args = mf_args
     self.n_hp = n_hp
     self.kf = kf
-    if mf != None: self.mf = mf
+    if mf is not None: self.mf = mf
     self.kf_args_pred = kf_args_pred
     self.mf_args_pred = mf_args_pred
     self.fp = fp
     
     #set the toplitz likelihood if the toeplitz kernel is defined
     self.toeplitz_kf = toeplitz_kf
-    if self.toeplitz_kf != None:
+    if self.toeplitz_kf is not None:
       self.teop_sol = np.mat(np.empty(t.size)).T
       self.logLikelihood = self.logLikelihood_toeplitz
 
@@ -74,7 +74,7 @@ class GP(object):
     #keyword arguments
     self.si = 0 #index used to store the chol solve, etc
     self.n_hp = n_hp
-    if p != None: self.Pars(p) #always set _pars via the Pars method, p is the visible property
+    if p is not None: self.Pars(p) #always set _pars via the Pars method, p is the visible property
     
   def Set(self,t=None,kf_args=None,kf=None,p=None,mf=None,mf_args=None,n_hp=None,kf_args_pred=None,mf_args_pred=None,fp=None):
     """
@@ -82,19 +82,19 @@ class GP(object):
     __init__ method with all the keywords.
     """
 
-    if t != None:self.t = t
-    if kf_args != None:self.kf_args = kf_args    
+    if t is not None:self.t = t
+    if kf_args is not None:self.kf_args = kf_args    
     
     #keyword arguments
     self.si = 0 #index used to store the chol solve, etc
-    if n_hp != None: self.n_hp = n_hp
-    if p != None: self.Pars(p)
-    if kf != None: self.kf = kf
-    if mf != None: self.mf = mf
-    if fp != None: self.fp = fp
-    if mf_args != None: self.mf_args = mf_args
-    if kf_args_pred != None: self.kf_args_pred = kf_args_pred
-    if mf_args_pred != None: self.mf_args_pred = mf_args_pred
+    if n_hp is not None: self.n_hp = n_hp
+    if p is not None: self.Pars(p)
+    if kf is not None: self.kf = kf
+    if mf is not None: self.mf = mf
+    if fp is not None: self.fp = fp
+    if mf_args is not None: self.mf_args = mf_args
+    if kf_args_pred is not None: self.kf_args_pred = kf_args_pred
+    if mf_args_pred is not None: self.mf_args_pred = mf_args_pred
   
   def Pars(self,p=None):
     """
@@ -103,7 +103,7 @@ class GP(object):
     
     """
     
-    if p == None:
+    if p is None:
       return np.copy(self._pars)
     else:
       self._pars = np.array(p)
@@ -251,12 +251,12 @@ class GP(object):
   def PredictGP(self,X_pred=None,mf_args_pred=None,wn=True):
     "Returns the predictive distributions for the GP alone using current hyperparmeters"
     
-    if X_pred != None: self.kf_args_pred = X_pred
-    if mf_args_pred != None: self.mf_args_pred = mf_args_pred
+    if X_pred is not None: self.kf_args_pred = X_pred
+    if mf_args_pred is not None: self.mf_args_pred = mf_args_pred
     
     #set predictive distributions to the inputs if not set
-    if self.kf_args_pred == None: self.kf_args_pred = self.kf_args
-    if self.mf_args_pred == None: self.mf_args_pred = self.mf_args
+    if self.kf_args_pred is None: self.kf_args_pred = self.kf_args
+    if self.mf_args_pred is None: self.mf_args_pred = self.mf_args
     
     #Construct the covariance matrix
     K = GPC.CovarianceMatrix(self._pars[:self.n_hp],self.kf_args,KernelFunction=self.kf)
@@ -296,7 +296,7 @@ class GP(object):
     """
 
     print "Guess pars:", self._pars
-    if fp != None: self.fp = fp
+    if fp is not None: self.fp = fp
     pars = OP.Optimise(self.logPosterior,self._pars,(),fixed=self.fp,method='NM',**kwargs)
     self.Pars(pars)
   
@@ -304,8 +304,8 @@ class GP(object):
     "Returns a random vector from the conditioned GP"
     
     #set predictive distributions to the inputs if not set
-    if self.kf_args_pred == None: self.kf_args_pred = self.kf_args
-    if self.mf_args_pred == None: self.mf_args_pred = self.mf_args
+    if self.kf_args_pred is None: self.kf_args_pred = self.kf_args
+    if self.mf_args_pred is None: self.mf_args_pred = self.mf_args
     
     #Construct the covariance matrix
     K = GPC.CovarianceMatrix(self._pars[:self.n_hp],self.kf_args,KernelFunction=self.kf)
@@ -327,8 +327,8 @@ class GP(object):
     "Returns a random vector from the GP prior"
     
     #set predictive distributions to the inputs if not set
-    if self.kf_args_pred == None: self.kf_args_pred = self.kf_args
-    if self.mf_args_pred == None: self.mf_args_pred = self.mf_args
+    if self.kf_args_pred is None: self.kf_args_pred = self.kf_args
+    if self.mf_args_pred is None: self.mf_args_pred = self.mf_args
 
     #Construct the covariance matrix
     K_ss = GPC.CovarianceMatrixCornerFull(self._pars[:self.n_hp],self.kf_args_pred,KernelFunction=self.kf,WhiteNoise=wn)
@@ -339,10 +339,10 @@ class GP(object):
     """Plots the 1 and 2 sigma range of the GP (but doesn't take into account mean function errors)"""
     
     if x==None:
-      if self.mf_args_pred == None:
-        if self.mf_args != None: self.mf_args_pred = self.mf_args      
+      if self.mf_args_pred is None:
+        if self.mf_args is not None: self.mf_args_pred = self.mf_args      
         else:
-          if self.kf_args_pred == None: self.kf_args_pred = self.kf_args
+          if self.kf_args_pred is None: self.kf_args_pred = self.kf_args
           self.mf_args_pred = self.kfVec_pred()
     else:
       self.mf_args_pred = x
@@ -353,10 +353,10 @@ class GP(object):
   def PlotData(self,**kwargs):
     """Plots the data with errorbars"""
         
-    if self.mf_args == None: self.mf_args = self.kfVec()
+    if self.mf_args is None: self.mf_args = self.kfVec()
     
     #set the errors    
-    if self.n_hp == None: err = self._pars[-1]
+    if self.n_hp is None: err = self._pars[-1]
     else: err = self._pars[self.n_hp-1]
     
     GPU.PlotData(self.mf_args,self.t,np.ones(self.t.size)*err,title=None,**kwargs)
@@ -364,10 +364,10 @@ class GP(object):
   def PlotMean(self,x=None):
     
     if x==None:
-      if self.mf_args_pred == None:
-        if self.mf_args != None: self.mf_args_pred = self.mf_args      
+      if self.mf_args_pred is None:
+        if self.mf_args is not None: self.mf_args_pred = self.mf_args      
         else:
-          if self.kf_args_pred == None: self.kf_args_pred = self.kf_args
+          if self.kf_args_pred is None: self.kf_args_pred = self.kf_args
           self.mf_args_pred = self.kfVec_pred()
     else:
       self.mf_args_pred = x
