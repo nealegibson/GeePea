@@ -150,12 +150,12 @@ def BFGS(ErrFunc, params0, function_args, verbose=True):
   if verbose:
     print "Running BFGS minimisation... "
     t0 = time.clock()
-  params = fmin_bfgs(ErrFunc, params0, args=function_args,full_output=0)
+  params = fmin_bfgs(ErrFunc, params0, args=function_args,full_output=1,gtol=1e-5)
   if verbose:
     print "(Time: %f secs)" % (time.clock()-t0)
-    print "Optimised parameters: ", params,"\n"
+    print "Optimised parameters: ", params[0],"\n"
     
-  return params
+  return params[0]
 
 def L_BFGS_B(ErrFunc, params0, function_args, verbose=True, **kw):
   """
