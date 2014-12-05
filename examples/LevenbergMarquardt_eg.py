@@ -28,6 +28,11 @@ f = MF.Transit_aRs(tpar[:-1],t) + np.random.normal(0,tpar[-1],t.size)
 
 #perform LM fit to the data
 p,pe,wn,K,logE = Infer.LevMar(MF.Transit_aRs,gpar[:-1],(t,),f,fixed=fixed[:-1],bounds=None)
+print K
+print K.shape
+print np.sqrt(K.diagonal())
+print pe
+print np.sqrt(K.diagonal()) == np.hstack([pe,0.])
 
 #get residuals
 resid = f - MF.Transit_aRs(p,t)

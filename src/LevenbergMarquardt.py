@@ -18,6 +18,16 @@ def LevMar(func,par,func_args,y,err=None,fixed=None,bounds=None,return_BIC=False
   code from https://github.com/jjhelmus/leastsqbound-scipy/ in order to implement the
   bound case (leastsqbound), else defaults to leastsq (which leastsqbound does anyway!)
   
+  Has a similar syntax to Optimiser, but requires the function to be passed rather than
+  the likelihood function (therefore cannot optimise noise parameters, GPs etc). Added
+  leastsqbound (from https://github.com/jjhelmus/leastsqbound-scipy/, Copyright (c) 2012
+  Jonathan J. Helmus, see file for full license) that uses parameter transformations to
+  enable bound optimisation. This is only enabled for bound optimisation. The error
+  estimates from LM optimisation are useful to seed MCMC, and also can be used to compute
+  an evidence approximation (via BIC, AIC or Laplace optimisation). Care needs to be taken
+  as to the reliability of the uncertainties compared to an MCMC, and this should
+  generally only be used as an approximation.
+  
   Parameters
   ----------
   func : function to fit
@@ -108,14 +118,18 @@ def LevMar(func,par,func_args,y,err=None,fixed=None,bounds=None,return_BIC=False
   logE_AIC = logP_max - D * N_obs / (N_obs-D-1.)
   sign,logdetK = np.linalg.slogdet( 2*np.pi*K_fit ) # get log determinant
   logE = logP_max + 0.5 * logdetK #get evidence approximation based on Gaussian assumption
-    
+  
+  #expand K to the complete covariance matrix - ie even fixed parameters + white noise
+  ind = np.hstack([(fixed==0).cumsum()[np.where(fixed==1)],K.diagonal().size]) #get index to insert zeros
+  Kn = np.insert(np.insert(K,ind,0,axis=0),ind,0,axis=1) #insert zeros corresponding to fixed pars
+  
   print "Gaussian Evidence approx:"
   print " log ML =", logP_max
   print " log E =", logE
   print " log E (BIC) =", logE_BIC, "(D = {}, N = {})".format(D,N_obs)
   print " log E (AIC) =", logE_AIC, "(D = {}, N = {})".format(D,N_obs)
   
-  ret_list = [bf_par,err_par,rescale,K_fit,logE]
+  ret_list = [bf_par,err_par,rescale,Kn,logE]
   if return_BIC: ret_list.append(logE_BIC)
   if return_AIC: ret_list.append(logE_AIC)
   return ret_list
