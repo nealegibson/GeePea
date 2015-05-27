@@ -4,8 +4,6 @@ import time
 from scipy.optimize import fmin,brute,fmin_cg,fmin_powell
 from scipy.optimize import leastsq
 
-import MyFuncs as MF
-
 from leastsqbound import leastsqbound
 
 ##########################################################################################
@@ -111,7 +109,7 @@ def LevMar(func,par,func_args,y,err=None,fixed=None,bounds=None,return_BIC=False
   print "white noise =", wn
   
   #calculate the log evidence for the best fit model
-  logP_max = MF.LogLikelihood_iid(resid,1.,err*rescale)
+  logP_max = LogLikelihood_iid(resid,1.,err*rescale)
   D = np.diag(K_fit).size
   N_obs = y.size
   logE_BIC = logP_max - D/2.*np.log(N_obs)
@@ -134,6 +132,20 @@ def LevMar(func,par,func_args,y,err=None,fixed=None,bounds=None,return_BIC=False
   if return_AIC: ret_list.append(logE_AIC)
   return ret_list
 
+##########################################################################################
+#LogLikelihood_iid from MyFuncs, copied here to make stand alone
+def LogLikelihood_iid(r,beta,sig=1.):
+  """
+  logP function from residuals and noise vector (sig)
+  - when sig = 1. it does not contribute to the noise budget,
+  hence beta is then the global noise parameter, otherwise a rescale
+  """
+  
+  N = r.size
+  
+  logP = - (1./2.) * ( r**2 / (beta*sig)**2 ).sum() - np.log(sig).sum() - N*np.log(beta) - N/2.*np.log(2*np.pi)
+  
+  return logP
 
 ##########################################################################################
 #create some aliases
