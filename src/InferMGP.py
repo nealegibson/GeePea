@@ -81,6 +81,9 @@ class MGP(object):
     #required arguments
     self.t = t
     self.kf_args = kf_args
+    #convert kf_args to matrix if only one input is provided
+    if self.kf_args.ndim == 1:
+      self.kf_args = np.mat(self.kf_args,).T
     
     #set defaults for optional arguments
     self._pars = np.array([])
@@ -89,6 +92,10 @@ class MGP(object):
     self.kf = kf
     if mf != None: self.mf = mf
     self.kf_args_pred = kf_args_pred
+    #convert kf_args to matrix if only one input is provided
+    if kf_args_pred is not None:
+      if self.kf_args_pred.ndim == 1:
+        self.kf_args_pred = np.mat(self.kf_args_pred,).T
     self.mf_args_pred = mf_args_pred
     self.fp = fp
 

@@ -63,7 +63,6 @@ class GP(object):
     if kf_args_pred is not None:
       if self.kf_args_pred.ndim == 1:
         self.kf_args_pred = np.mat(self.kf_args_pred,).T
-        
     self.mf_args_pred = mf_args_pred
     self.fp = fp
     
