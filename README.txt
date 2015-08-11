@@ -1,8 +1,8 @@
 
-Infer: Python module to implement Bayesian inference routines.
+GeePee: Python module for Gaussian processes
 
 Neale Gibson
 ngibson@eso.org
 nealegibby@gmail.com
 
-This module has merged my MCMC routines and Gaussian processes modules. The MCMC now includes orthogonal stepping, affine invariant methods (emcee), and I've made many additions to the Gaussian Process classes to include multiplicative systematics (not fully tested), easy integration to the inference and optimisation tools, better plotting interfaces, and more kernels. I've also added various methods to get the Bayesian evidence, eg importance sampling - best initiated from MCMC samples. These codes or earlier variations have been used for the inference in my recent papers. Please contact me should you wish to use this code, I'm happy to discuss any modifications or suggestions.
+GeePee module - general Gaussian process regression/fitting module. This is forked from my earlier GaussianProcesses and Infer modules that was developed for Gibson et al. (2012) and later work. Please cite this paper if making use of this code. This fork is to enable the GP object to be more easily passed to other optimisation/inference codes, and to simplify the application to simple problems. This code is designed to be as fast as possible without rewriting any basic linear algebra routines, and as flexible as possible, enabling extension to externally defined kernels, and combining multiple GPs into a single posterior (e.g. for multiple light curve fitting).
