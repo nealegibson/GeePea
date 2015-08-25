@@ -32,7 +32,7 @@ def GPRegress(K_s,PrecMatrix,K_ss,y,return_covariance=False):
   
   # (q x n) = (q x n) * (n x n) * (n x 1)
   f_s = K_s * PrecMatrix * y
-
+  
   # (q x q) = (q x q) - (q x n) * (n x n) * (n x q)  
   var_s = K_ss - np.matrix(K_s) * PrecMatrix * np.matrix(K_s).T
 

@@ -8,11 +8,9 @@ nealegibby@gmail.com
 
 """
 
-from Optimiser import *
+#from Optimiser import *
 
-from InferGP import GP
-#from InferMGP import MGP
-
+from GPClass import GP
 from GPUtils import *
 import GPRegression as GPR
 import GPCovarianceMatrix as GPC

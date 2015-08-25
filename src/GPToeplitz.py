@@ -6,7 +6,6 @@ import ctypes
 from numpy.ctypeslib import ndpointer
 import os
 
-
 #import the c function using ctypes
 LTZSolveC = ctypes.CDLL('{}/LevinsonTrenchZoharSolve.so'.format(os.path.dirname(__file__))).LevinsonTrenchZoharSolve
 #specify the argument and return types

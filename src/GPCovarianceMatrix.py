@@ -7,6 +7,11 @@ from GPKernelFunctions import SqExponentialRad #for default kernel function
 
 ####################################################################################################
 
+#def CholSolve(K,r):
+
+  
+
+
 #def CovarianceMatrix(par,X,fixed=None,fixed_par=None,KernelFunction=SqExponentialRad):
 def CovarianceMatrix(theta,X,KernelFunction=SqExponentialRad):
   """
