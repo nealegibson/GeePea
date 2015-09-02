@@ -10,6 +10,8 @@ the GPClass due - ideally the kernel and kernel gradient need to be written as a
 class with a common inverse covariance matrix to avoid repeating calculations, which
 will be hopefully incorporated in future versions)
 
+Note, I have barely used periodic kernels, so use these at your own risk!
+
 ****
 ALL THE PERIODIC AND QUASI-PERIODIC KERNELS USE FREQUENCY, RATHER
 THAN PERIOD, AS A HYPERPARAMETER
@@ -18,8 +20,8 @@ THAN PERIOD, AS A HYPERPARAMETER
 """
 
 import numpy as np
-import scipy.spatial
-from Infer.GPKernelFunctions import EuclideanDist, EuclideanDist2
+#import scipy.spatial
+from GPKernelFunctions import EuclideanDist, EuclideanDist2
 
 def PeriodicSqExponentialRad(X, Y, theta, white_noise = False):
   """

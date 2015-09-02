@@ -34,13 +34,65 @@ def LTZSolve(a,b,x):
 def CovarianceMatrixToeplitz(theta,X,ToeplitzKernel):
   """
   Toeplitz equivelent of the CovarianceMatrix function to construct the Toeplitz matrix
-  using the same format
+  using the same format - only returns a vector
   
   """
       
   K = ToeplitzKernel(X,X,theta,white_noise=True)
   
   return K
+
+def CovarianceMatrixFullToeplitz(theta,X,ToeplitzKernel):
+  """
+  Toeplitz equivelent of the CovarianceMatrix function to construct the Toeplitz matrix
+  using the same format
+
+  """
+
+  K = LA.toeplitz(ToeplitzKernel(X,X,theta,white_noise=True))
+
+  return np.matrix(K)
+
+def CovarianceMatrixBlockToeplitz(theta,X,Y,ToeplitzKernel):
+  """
+  X - input matrix (q x D) - of training points
+  Y - input matrix (n x D) - of predictive points
+  theta - hyperparameter array/list
+  K - (q x n) covariance matrix block
+  """
+
+  if X.shape[0] > Y.shape[0]: # input matrix is larger than predictive!
+    a = ToeplitzKernel(X,Y,theta,white_noise=False)
+  else: # predictive matrix is larger than training
+    a = ToeplitzKernel(Y,X,theta,white_noise=False)
+
+  #return q x n matrix block
+  K = LA.toeplitz(a[:X.shape[0]],a[:Y.shape[0]])
+
+  return np.matrix(K)
+
+def CovarianceMatrixCornerDiagToeplitz(theta,X,ToeplitzKernel,WhiteNoise=True):
+  """
+  X - input matrix (q x D) - of training points
+  theta - hyperparameter array/list
+  K - (q x q) covariance matrix corner block - only diagonal terms are returned
+    (this function needs optimised as it calculates the whole covariance matrix first...)
+  """
+
+  K = np.diag(np.diag(LA.toeplitz(ToeplitzKernel(X,X,theta,white_noise=WhiteNoise))))
+
+  return np.matrix(K)
+
+def CovarianceMatrixCornerFullToeplitz(theta,X,ToeplitzKernel,WhiteNoise=True):
+  """
+  X - input matrix (q x D) - of training points
+  theta - hyperparameter array/list
+  K - (q x q) covariance matrix corner block
+  """
+
+  K = LA.toeplitz(ToeplitzKernel(X,X,theta,white_noise=WhiteNoise))
+
+  return np.matrix(K)
 
 ##########################################################################################
 def ToeplitzSqExponential(X,Y,theta,white_noise=False):
@@ -56,14 +108,18 @@ def ToeplitzSqExponential(X,Y,theta,white_noise=False):
   D2 = np.array(np.square(X-Y[0])).flatten()
   
   #calculate Toeplitz 'matrix' stored as array
-  a = theta[0]**2 * np.exp( -D2 / theta[1]**2 )
+  a = theta[0]**2 * np.exp( - 0.5 * D2 / theta[1]**2 )
   
   #add white noise
   if white_noise == True: a[0] += (theta[-1]**2)
   return a
-  
+
+ToeplitzSqExponential.n_par = lambda D: D+2
+ToeplitzSqExponential.kernel_type = 'Toeplitz'
+
 def ToeplitzMAT_Kernel32(X,Y,theta,white_noise=False):
   """
+
   Toeplitz Matern covariance kernel for shape =3/2. Must accept arguments in the same
   format as the 'normal'/full kernel, but now only returns a vector a describing the
   diagonal elements of the Toeplitz matrix.
@@ -71,7 +127,8 @@ def ToeplitzMAT_Kernel32(X,Y,theta,white_noise=False):
   theta[0] - overall scale param - ie prior covariance
   theta[1] - length scale
   theta[2] - white noise
-  
+
+
   """
 
   #first calculate distance matrix

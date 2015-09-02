@@ -7,11 +7,6 @@ from GPKernelFunctions import SqExponentialRad #for default kernel function
 
 ####################################################################################################
 
-#def CholSolve(K,r):
-
-  
-
-
 #def CovarianceMatrix(par,X,fixed=None,fixed_par=None,KernelFunction=SqExponentialRad):
 def CovarianceMatrix(theta,X,KernelFunction=SqExponentialRad):
   """
@@ -19,17 +14,7 @@ def CovarianceMatrix(theta,X,KernelFunction=SqExponentialRad):
   theta - hyperparameter array/list
   K - (n x n) covariance matrix
   """
-  
-  #allow fixed parameters and variable params to be passed
-#   if fixed_par==None:
-#     theta = par[:]
-#   else:
-#     fixed = np.array(fixed) #ensure fixed is a np array
-#     theta = np.empty(fixed.size) #create empty pars array
-#     #assign parameters to normal param vector
-#     theta[np.where(fixed==True)] = fixed_par
-#     theta[np.where(fixed!=True)] = par
-    
+
   K = KernelFunction(X,X,theta,white_noise=True)
   
   return np.matrix(K)
@@ -37,7 +22,7 @@ def CovarianceMatrix(theta,X,KernelFunction=SqExponentialRad):
 def CovarianceMatrixBlock(theta,X,Y,KernelFunction=SqExponentialRad):
   """
   X - input matrix (q x D) - of training points
-  Y - input matrix (n x D) - of precitive points
+  Y - input matrix (n x D) - of predictive points
   theta - hyperparameter array/list
   K - (q x n) covariance matrix block
   """
@@ -51,7 +36,7 @@ def CovarianceMatrixCornerDiag(theta,X,KernelFunction=SqExponentialRad,WhiteNois
   X - input matrix (q x D) - of training points
   theta - hyperparameter array/list
   K - (q x q) covariance matrix corner block - only diagonal terms are returned
-    (this function needs optimised as it calculates the whole convariance matrix first...)
+    (this function needs optimised as it calculates the whole covariance matrix first...)
   """
   
   K = np.diag(np.diag(KernelFunction(X,X,theta,white_noise=WhiteNoise)))

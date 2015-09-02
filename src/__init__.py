@@ -15,5 +15,6 @@ from GPUtils import *
 import GPRegression as GPR
 import GPCovarianceMatrix as GPC
 from GPKernelFunctions import *
+from GPWhiteNoiseKernel import *
 from GPPeriodicKernelFunctions import *
 from GPToeplitz import *

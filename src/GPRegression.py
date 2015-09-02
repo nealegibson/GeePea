@@ -25,9 +25,9 @@ def GPRegress(K_s,PrecMatrix,K_ss,y,return_covariance=False):
   """
   
   #ensure all data are in matrix form
-  K_s = np.matrix(K_s)
-  K_ss = np.matrix(K_ss)
-  PrecMatrix = np.matrix(PrecMatrix)
+  # K_s = np.matrix(K_s)
+  # K_ss = np.matrix(K_ss)
+  # PrecMatrix = np.matrix(PrecMatrix)
   y = np.matrix(np.array(y)).T # (n x 1) column vector
   
   # (q x n) = (q x n) * (n x n) * (n x 1)
