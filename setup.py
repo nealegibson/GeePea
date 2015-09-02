@@ -3,17 +3,17 @@ from distutils.core import setup, Extension
 
 setup(
 
-  name = "GeePee", version = "1.0",
-  description='Python version of MCMC, plus other GeePeeence codes under development', 
+  name = "GeePea", version = "1.0",
+  description='python implementation of Gaussian Processes', 
   author='Neale Gibson',
   author_email='ngibson@eso.org',
 
-  packages=['GeePee'],
-  package_dir={'GeePee':'src'},
+  packages=['GeePea'],
+  package_dir={'GeePea':'src'},
   
   #and extension package for solving toeplitz matrices...
   ext_modules = [
-    Extension("GeePee.LevinsonTrenchZoharSolve",sources=["src/LevinsonTrenchZoharSolve.c"]),
+    Extension("GeePea.LevinsonTrenchZoharSolve",sources=["src/LevinsonTrenchZoharSolve.c"]),
     ]
 
   )
