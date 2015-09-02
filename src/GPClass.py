@@ -117,10 +117,10 @@ class GP(object):
 
     #GP parameters
     if y is not None:
-      self.y = y
-      self.n = y.size
+      self.y = np.array(y)
+      self.n = self.y.size
     if x is not None:
-      self.x = x
+      self.x = np.array(x)
       if self.x.ndim == 1: #if array is 1D
         self.x = self.x.reshape(-1,1) #reshape so N x 1
       self.x = np.mat(self.x) #finally ensure its a matrix
@@ -128,7 +128,7 @@ class GP(object):
         "x is not the correct shape, should be NxD, leading dimension: {} != {}".format(self.x.shape[0],self.n)
       self.d = self.x.shape[1] # record the dimensionality of x
     if x_pred is not None:
-      self.x_pred = x_pred
+      self.x_pred = np.array(x_pred)
       if self.x_pred.ndim == 1: #if array is 1D
         self.x_pred = self.x_pred.reshape(-1,1) #reshape so N x 1
       self.x_pred = np.mat(self.x_pred) #finally ensure its a matrix
@@ -161,8 +161,8 @@ class GP(object):
     if n_mfp is not None: self._n_mfp = n_mfp
     if mf is not None:
       self.mf = mf
-    if xmf is not None: self.xmf = xmf
-    if xmf_pred is not None: self.xmf = xmf_pred
+    if xmf is not None: self.xmf = np.array(xmf)
+    if xmf_pred is not None: self.xmf = np.array(xmf_pred)
 
     #auxiliary parameters
     if n_store is not None:
@@ -220,6 +220,10 @@ class GP(object):
       self.xmf_pred = self.kfVec_pred() #set as first vector of x by default
     else:
       if self.xmf_pred is None: self.xmf_pred = self.xmf
+
+    #if x_pred is provided to set_pars, always reset xmf_pars if not also provided
+    if x_pred is not None and xmf_pred is None:
+      self.xmf_pred = self.kfVec_pred()
 
   def pars(self,p=None):
     """
@@ -290,14 +294,14 @@ class GP(object):
     print " Kernel Function:", self.kf.__name__
     print " Kernel Type:", self.kernel_type
     print " Hyperparameters:", self._pars[self._n_mfp:], "(#hp = {})".format(self.n_hp)
-    if self.fp: print " Fixed hyperparameters:", self.fp[self._n_mfp:]
+    if self.fp is not None: print " Fixed hyperparameters:", self.fp[self._n_mfp:]
     print " Mean Function:", self.mf.__name__
     print " MF args:", np.array(self.xmf).shape #, type(self.xmf)
     print " MF Parameters:", self._pars[:self.n_mfp], "(#mfp = {})".format(self.n_mfp)
-    if self.fp: print " Fixed MF Parameters:", self.fp[:self.n_mfp]
+    if self.fp is not None: print " Fixed MF Parameters:", self.fp[:self.n_mfp]
     print " Predictive GP args X:", np.array(self.x_pred).shape #, type(self.x_pred)
     print " Predictive mf args:", np.array(self.xmf_pred).shape #, type(self.xmf_pred)
-    print " Target values err yerr:", np.array(self.yerr).shape #, type(self.yerr)
+    if self.yerr is not None: print " Target values err yerr:", np.array(self.yerr).shape #, type(self.yerr)
     print "--------------------------------------------------------------------------------"
 
   def logLikelihood_cholesky(self,p):
