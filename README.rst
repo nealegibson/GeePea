@@ -1,5 +1,6 @@
 
 GeePea: Python module for Gaussian processes
+--------------------------------------------
 
 Neale Gibson
 ngibson@eso.org

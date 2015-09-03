@@ -61,13 +61,19 @@ def CovarianceMatrixBlockToeplitz(theta,X,Y,ToeplitzKernel):
   K - (q x n) covariance matrix block
   """
 
-  if X.shape[0] > Y.shape[0]: # input matrix is larger than predictive!
-    a = ToeplitzKernel(X,Y,theta,white_noise=False)
-  else: # predictive matrix is larger than training
-    a = ToeplitzKernel(Y,X,theta,white_noise=False)
+  # if X.shape[0] > Y.shape[0]: # input matrix is larger than predictive!
+  #   a = ToeplitzKernel(X,Y,theta,white_noise=False)
+  # else: # predictive matrix is larger than training
+  #   a = ToeplitzKernel(Y,X,theta,white_noise=False)
+
+  a = ToeplitzKernel(X,Y,theta,white_noise=False) #length q
+  b = ToeplitzKernel(Y,X,theta,white_noise=False) #length n
+
+  print a.shape
+  print b.shape
 
   #return q x n matrix block
-  K = LA.toeplitz(a[:X.shape[0]],a[:Y.shape[0]])
+  K = LA.toeplitz(a,b)
 
   return np.matrix(K)
 

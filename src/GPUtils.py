@@ -12,7 +12,7 @@ def RandomVector(K,m=None):
   Get a random gaussian vector from the covariance matrix K.
   """
   
-  if m == None: #set mean function if not given
+  if m is None: #set mean function if not given
     m = np.zeros(K[:,0].size)
   
   return np.random.multivariate_normal(m,K)
@@ -37,7 +37,7 @@ def RandVectorFromConditionedGP(K_s,PrecMatrix,K_ss,r,m=None):
   # (q x q) = (q x q) - (q x n) * (n x n) * (n x q)  
   K_ss_cond = K_ss - np.matrix(K_s) * PrecMatrix * np.matrix(K_s).T
 
-  if m == None: #set zero mean function if not given
+  if m is None: #set zero mean function if not given
     m = np.zeros(f_s.size)
   
   return RandomVector(K_ss_cond,m=np.array(f_s).flatten()+m)

@@ -1,8 +1,10 @@
 #!/usr/bin/env python
 
-import GeePea
 import numpy as np
 import pylab
+import os
+
+import GeePea
 import MyFuncs as MF
 import Infer
 
@@ -36,5 +38,9 @@ GP.p,GP.ep = Infer.AnalyseChains(10000,n_chains=2)
 #and plot the correlations
 pylab.figure(2)
 Infer.PlotCorrelations(10000,n_chains=2)
+
+#delete the MCMC chains
+if os.path.exists('MCMC_chain_1.npy'): os.remove('MCMC_chain_1.npy')
+if os.path.exists('MCMC_chain_2.npy'): os.remove('MCMC_chain_2.npy')
 
 raw_input()

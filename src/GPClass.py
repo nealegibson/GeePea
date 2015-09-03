@@ -139,7 +139,7 @@ class GP(object):
       self.kf = kf
       try:
         kernel_type = kf.kernel_type #overwrite kernel type if given by kernel
-        print "overwriting default kernel type"
+        # print "overwriting default kernel type"
       except: pass
     if kernel_type is not None:
       self.kernel_type = kernel_type
@@ -183,19 +183,17 @@ class GP(object):
     if self._n_mfp is None or mf is not None:
       try: self._n_mfp = self.mf.n_par(self.d)
       except:
-        print "mf.n_par() function not found!"
         try: self._n_mfp = self.mf.n_par
-        except: print "mf.n_par parameter not found!"
-        else: print "#mf par set from mf.n_par!"
-      else: print "#mf par set from mf.n_par(D)!"
+        except: pass
+        else: pass
+      #else: print "#mf par set from mf.n_par(D)!"
     if self._n_hp is None or kf is not None:
       try: self._n_hp = self.kf.n_par(self.d)
       except:
-        print "kf.n_par() function not found!"
         try: self._n_hp = self.kf.n_par
-        except: print "kf.n_par parameter not found!"
-        else: print "#kf par set from kf.n_par!"
-      else: print "#kf par set from kf.n_par(D)!"
+        except: pass
+        #else: print "#kf par set from kf.n_par!"
+      else: pass
     
     #set number of parameters for kernel and mean function
     #kernel function attributes will overwrite mf attributes
@@ -439,9 +437,9 @@ class GP(object):
 
     #Construct the covariance matrix
     if self.kernel_type == 'Full':
-      K = GPC.CovarianceMatrix(self._pars[self._n_mfp:],self.x,KernelFunction=self.kf)
-      K_s = GPC.CovarianceMatrixBlock(self._pars[self._n_mfp:],self.x_pred,self.x,KernelFunction=self.kf)
-      K_ss = GPC.CovarianceMatrixCornerDiag(self._pars[self._n_mfp:],self.x_pred,KernelFunction=self.kf,WhiteNoise=wn)
+      K = GPC.CovarianceMatrix(self._pars[self._n_mfp:],self.x,self.kf)
+      K_s = GPC.CovarianceMatrixBlock(self._pars[self._n_mfp:],self.x_pred,self.x,self.kf)
+      K_ss = GPC.CovarianceMatrixCornerDiag(self._pars[self._n_mfp:],self.x_pred,self.kf,WhiteNoise=wn)
       print "Pred:", K.shape, K_s.shape, K_ss.shape
       print "Pred:", type(K), type(K_s), type(K_ss)
     elif self.kernel_type == 'Toeplitz' or self.kernel_type == 'T':
