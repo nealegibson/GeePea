@@ -18,3 +18,4 @@ from GPKernelFunctions import *
 from GPWhiteNoiseKernel import *
 from GPPeriodicKernelFunctions import *
 from GPToeplitz import *
+from GPToeplitzKernels import *
