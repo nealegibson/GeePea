@@ -59,18 +59,14 @@ def CovarianceMatrixBlockToeplitz(theta,X,Y,ToeplitzKernel):
   Y - input matrix (n x D) - of predictive points
   theta - hyperparameter array/list
   K - (q x n) covariance matrix block
-  """
 
-  # if X.shape[0] > Y.shape[0]: # input matrix is larger than predictive!
-  #   a = ToeplitzKernel(X,Y,theta,white_noise=False)
-  # else: # predictive matrix is larger than training
-  #   a = ToeplitzKernel(Y,X,theta,white_noise=False)
+  Note that this only works when the step sizes are the same for X and Y, toplitz
+  usaully 1D!
+
+  """
 
   a = ToeplitzKernel(X,Y,theta,white_noise=False) #length q
   b = ToeplitzKernel(Y,X,theta,white_noise=False) #length n
-
-  print a.shape
-  print b.shape
 
   #return q x n matrix block
   K = LA.toeplitz(a,b)

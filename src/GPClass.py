@@ -13,16 +13,6 @@ import Optimiser as OP
 import GPToeplitz as GPT
 
 ###############################################################################################################
-def add_n_par(N):
-  """
-  Simple decorator function to add n_par to a static function - required for built in mean function
-  """
-  def decor(func):
-    func.n_par = N
-    return func
-  return decor
-
-###############################################################################################################
 
 class GP(object):
   """
@@ -235,6 +225,7 @@ class GP(object):
     else:
       # reset the hash thingy is pars are reset
       self._pars = np.array(p)
+      self.n_par = self._pars.size
       self.hp_hash[self.si] = hash('') #create empty hash that won't be matched with any pars
       self.choFactor[self.si] = None
       self.logdetK[self.si] = None
@@ -388,7 +379,7 @@ class GP(object):
   #default mean function - static method so can be redefined, just returns 0
   #add_n_par just adds a function attribute to specify number of mf parameters
   @staticmethod
-  @add_n_par(0)
+  @GPU.add_n_par(0)
   def mf(*args):
     "default mean function = 0."
     return 0.
@@ -435,19 +426,19 @@ class GP(object):
     if x_pred is not None: self.x_pred = x_pred
     if xmf_pred is not None: self.xmf_pred = xmf_pred
 
+    if self.x is not self.x_pred and (self.kernel_type == 'Toeplitz' or self.kernel_type == 'T'):
+      print "warning: using Toeplitz kernel for prediction only works when step sizes are equal" \
+            " for x and x_pred.\nUse a 'Full' kernel after optimisation for if not."
+
     #Construct the covariance matrix
     if self.kernel_type == 'Full':
       K = GPC.CovarianceMatrix(self._pars[self._n_mfp:],self.x,self.kf)
       K_s = GPC.CovarianceMatrixBlock(self._pars[self._n_mfp:],self.x_pred,self.x,self.kf)
       K_ss = GPC.CovarianceMatrixCornerDiag(self._pars[self._n_mfp:],self.x_pred,self.kf,WhiteNoise=wn)
-      print "Pred:", K.shape, K_s.shape, K_ss.shape
-      print "Pred:", type(K), type(K_s), type(K_ss)
     elif self.kernel_type == 'Toeplitz' or self.kernel_type == 'T':
       K = GPT.CovarianceMatrixFullToeplitz(self._pars[self._n_mfp:],self.x,self.kf)
       K_s = GPT.CovarianceMatrixBlockToeplitz(self._pars[self._n_mfp:],self.x_pred,self.x,self.kf)
       K_ss = GPT.CovarianceMatrixCornerDiagToeplitz(self._pars[self._n_mfp:],self.x_pred,self.kf,WhiteNoise=wn)
-      print "Pred:", K.shape, K_s.shape, K_ss.shape
-      print "Pred:", type(K), type(K_s), type(K_ss)
 
     #Calculate the precision matrix (needs optimised)
     PrecMatrix = np.linalg.inv( np.matrix(K) )
@@ -481,7 +472,7 @@ class GP(object):
     Optimise the parameters of the model - simple wrapper to Infer.Optimise
     """
 
-    print "Guess pars:", self._pars
+    #print "Guess pars:", self._pars
     if fp is not None: self.fp = fp
     pars = OP.Optimise(self.logPosterior,self._pars,(),fixed=self.fp,method='NM',**kwargs)
     self.pars(pars)
@@ -522,7 +513,10 @@ class GP(object):
     # if self.mf_args_pred is None: self.mf_args_pred = self.mf_args
 
     #Construct the covariance matrix
-    K_ss = GPC.CovarianceMatrixCornerFull(self._pars[self._n_mfp:],self.x_pred,KernelFunction=self.kf,WhiteNoise=wn)
+    if self.kernel_type == 'Full':
+      K_ss = GPC.CovarianceMatrixCornerFull(self._pars[self._n_mfp:],self.x_pred,KernelFunction=self.kf,WhiteNoise=wn)
+    elif self.kernel_type == 'Toeplitz' or self.kernel_type == 'T':
+      K_ss = GPT.CovarianceMatrixCornerFullToeplitz(self._pars[self._n_mfp:],self.x_pred,self.kf,WhiteNoise=wn)
 
     return GPU.RandomVector(K_ss) + self.mf(self._pars[:self._n_mfp], self.xmf_pred)
 

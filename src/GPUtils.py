@@ -30,7 +30,7 @@ def RandVectorFromConditionedGP(K_s,PrecMatrix,K_ss,r,m=None):
   K_ss = np.matrix(K_ss)
   PrecMatrix = np.matrix(PrecMatrix)
   r = np.matrix(np.array(r).flatten()).T # (n x 1) column vector
-  
+
   # (q x n) = (q x n) * (n x n) * (n x 1)
   f_s = K_s * PrecMatrix * r
    
@@ -110,3 +110,13 @@ def PlotRange3D(ax,x1_pred,x2_pred,f_pred,f_pred_err,sigma=1.,facecolor=['r','g'
     ax.plot_wireframe(X,Y,Z_d,color=facecolor[1],rstride=2,cstride=2)
 
 ####################################################################################################
+def add_n_par(N):
+  """
+  Simple decorator function to add n_par to a static function - required for built in mean function
+  """
+  def decor(func):
+    func.n_par = N
+    return func
+  return decor
+
+###############################################################################################################

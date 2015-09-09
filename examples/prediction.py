@@ -16,15 +16,15 @@ fp = [0,0,1]
 x_p = np.linspace(-2,1,200)
 
 #define the GP
-GP = GeePea.GP(x,y,p=hp,fp=fp,x_pred=x_p)
+gp = GeePea.GP(x,y,p=hp,fp=fp,x_pred=x_p)
 
 #optimise and plot
-GP.optimise()
+gp.optimise()
 pylab.figure(1)
-GP.plot()
+gp.plot()
 
 pylab.figure(2)
-GP.set_pars(x_pred=x_p)
-GP.plot()
+gp.set_pars(x_pred=x_p)
+gp.plot()
 
 raw_input()

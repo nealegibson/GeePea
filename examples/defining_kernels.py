@@ -35,13 +35,13 @@ mfp = [0.8,2.]
 hp = [0.,1.,0.1] # kernel hyperparameters (sq exponential takes 3 parameters for 1D input)
 
 #define the GP
-GP = GeePea.GP(x,y,p=mfp+hp,kf=MySqExponential,mf=my_mean_func)
+gp = GeePea.GP(x,y,p=mfp+hp,kf=MySqExponential,mf=my_mean_func)
 
 #print out the GP attributes
-GP.describe()
+gp.describe()
 
 #optimise and plot
-GP.optimise()
-GP.plot()
+gp.optimise()
+gp.plot()
 
 raw_input()

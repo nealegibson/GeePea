@@ -18,22 +18,22 @@ time = np.linspace(-0.1,0.1,200)
 flux = MF.Transit_aRs(mfp,time) + hp[0]*np.sin(2*np.pi*10.*time) + np.random.normal(0,hp[-1],time.size)
 
 #define the GP
-#GP = GeePea.GP(time,flux,p=mfp+hp,mf=MF.Transit_aRs,ep=ep) #using normal SqExponential kernel
-GP = GeePea.GP(time,flux,p=mfp+hp,kf=GeePea.ToeplitzSqExponential,mf=MF.Transit_aRs,ep=ep)
+#gp = GeePea.GP(time,flux,p=mfp+hp,mf=MF.Transit_aRs,ep=ep) #using normal SqExponential kernel
+gp = GeePea.GP(time,flux,p=mfp+hp,kf=GeePea.ToeplitzSqExponential,mf=MF.Transit_aRs,ep=ep)
 
 #optimise the free parameters
-GP.optimise()
+gp.optimise()
 
 #and plot
 pylab.figure(1)
-GP.plot()
+gp.plot()
 
 #can also run an MCMC by using GP.logPosterior()
 lims = (0,10000,4)
-Infer.MCMC_N(GP.logPosterior,GP.p,(),20000,GP.ep,N=2,adapt_limits=lims,glob_limits=lims)
+Infer.MCMC_N(gp.logPosterior,gp.p,(),20000,gp.ep,N=2,adapt_limits=lims,glob_limits=lims)
 
 #get the parameters and uncertainties from the MCMC
-GP.p,GP.ep = Infer.AnalyseChains(10000,n_chains=2)
+gp.p,gp.ep = Infer.AnalyseChains(10000,n_chains=2)
 
 #and plot the correlations
 pylab.figure(2)

@@ -9,11 +9,11 @@ y = np.sin(2*np.pi*x) + np.random.normal(0,0.1,x.size)
 
 p = [1,1,0.1]
 
-GP = GeePea.GP(x,y,p)
+gp = GeePea.GP(x,y,p)
 
-GP.optimise()
+gp.optimise()
 
-GP.plot()
+gp.plot()
 
 pylab.xlabel('x')
 pylab.ylabel('y')
