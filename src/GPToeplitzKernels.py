@@ -15,14 +15,35 @@ LTZSolveC.restype = ctypes.c_double
 
 ##########################################################################################
 def ToeplitzSqExponential(X,Y,theta,white_noise=False):
+  r"""
+  Toeplitz squared exponential function - only 1D input therefore 3 accepts 3 parameters. See
+  GeePea.SqExponential for equivalent full kernel.
+
+  .. math::
+
+    \Bsig_{ij} = k(\bx_i,\bx_j,\th) =
+    \xi^2 exp\left( - \sum_{k=1}^K \eta_k (x_{ik} - x_{jk})^2 \right) + \delta_{ij}\sigma^2,
+
+  where :math:`\th = \{\xi,l,\sigma\}`, :math:`\X = \{x_1,\dots,x_n \}^T`,
+  and :math:`\Y = \{y_1,\dots,y_{n^\prime}\}^T`.
+
+  Parameters
+  ----------
+  X : N x 1 matrix of inputs
+  Y : N' x 1 matrix of inputs
+  theta : array of 3 kernel function parameters
+  white_noise : boolean, add white noise to diagonal if True
+
+  Returns
+  -------
+  K : N x N' covariance matrix
+
+  See Also
+  --------
+  SqExponential : Squared exponential kernel using standard length scales
+
   """
-  Toeplitz squared exponential kernel. Must accept arguments in the same format as the
-  'normal'/full kernel, but now only returns a vector a describing the diagonal elements
-  of the Toeplitz matrix.
-  
-  To be used as input to LTZSolve
-  
-  """
+
   #first calculate distance matrix
   D2 = np.array(np.square(X-Y[0])).flatten()
   
@@ -38,17 +59,33 @@ ToeplitzSqExponential.kernel_type = 'Toeplitz'
 
 ##########################################################################################
 
-def ToeplitzMAT_Kernel32(X,Y,theta,white_noise=False):
-  """
+def ToeplitzMatern32(X,Y,theta,white_noise=False):
+  r"""
+  Toeplitz Matern 3/2 function - only 1D input therefore 3 accepts 3 parameters. See
+  GeePea.Matern32 for equivalent full kernel.
 
-  Toeplitz Matern covariance kernel for shape =3/2. Must accept arguments in the same
-  format as the 'normal'/full kernel, but now only returns a vector a describing the
-  diagonal elements of the Toeplitz matrix.
-  
-  theta[0] - overall scale param - ie prior covariance
-  theta[1] - length scale
-  theta[2] - white noise
+  .. math::
 
+    \Bsig_{ij} = k(\bx_i,\bx_j,\th) =
+    \xi_i^2 \left(1+\sqrt(3)D\right) exp\left( -\sqrt(3)D \right) + \delta_{ij}\sigma^2,
+
+  where :math:`D = (x_{i} - x_{k}) / l`, :math:`\th = \{\xi,l,\sigma\}`,
+  :math:`\X = \{x_1,\dots,x_n \}^T`, and :math:`\Y = \{y_1,\dots,y_{n^\prime}\}^T`.
+
+  Parameters
+  ----------
+  X : N x 1 matrix of inputs
+  Y : N' x 1 matrix of inputs
+  theta : array of 3 kernel function parameters
+  white_noise : boolean, add white noise to diagonal if True
+
+  Returns
+  -------
+  K : N x N' covariance matrix
+
+  See Also
+  --------
+  Matern32 : Full Matern 3/2 kernel
 
   """
 
@@ -62,7 +99,7 @@ def ToeplitzMAT_Kernel32(X,Y,theta,white_noise=False):
   if white_noise == True: a[0] += (theta[-1]**2)
   return a  
 
-ToeplitzMAT_Kernel32.n_par = 3
-ToeplitzMAT_Kernel32.kernel_type = 'Toeplitz'
+ToeplitzMatern32.n_par = 3
+ToeplitzMatern32.kernel_type = 'Toeplitz'
 
 ##########################################################################################
