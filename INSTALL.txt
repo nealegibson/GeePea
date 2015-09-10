@@ -1,0 +1,6 @@
+
+Just compile the python module as normal with distutils
+$ python setup.py build
+$ python setup.py install
+or
+$ python setup.py install --prefix=<INSTALL_DIR>
