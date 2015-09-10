@@ -37,7 +37,8 @@ gp.p,gp.ep = Infer.AnalyseChains(10000,n_chains=2)
 
 #and plot the correlations
 pylab.figure(2)
-Infer.PlotCorrelations(10000,n_chains=2)
+Infer.PlotCorrelations(10000,n_chains=2,p=np.where(np.array(gp.ep) > 0)[0])
+#pylab.savefig('Correlations.png')
 
 #delete the MCMC chains
 if os.path.exists('MCMC_chain_1.npy'): os.remove('MCMC_chain_1.npy')
