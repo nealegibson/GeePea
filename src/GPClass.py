@@ -177,7 +177,14 @@ class GP(object):
           self.CovMatCorner = self.CovarianceMatrixCornerMult #cov matrix corner K_ss - pred points with themselves
           self.CovMatCornerDiag = self.CovarianceMatrixCornerDiagMult #diagonal of cov matrix corner
         if self.kernel_type == 'Toeplitz':
-          raise ValueError("gp_type '{}' not yet supported for Toeplitz matrices!")
+          #use same cov matrix for likelihood calculation, toeplitz likelihood is modified for this
+          self.CovMat_p = self.CovarianceMatrixToeplitzAdd_p #cov matrix for likelihood calculations - only returns vector for Toe
+          #new functions to return full cov matrices after affine transform for toeplitz/multiplicative
+          self.CovMat = self.CovarianceMatrixFullToeplitzAdd
+          self.CovMatBlock = self.CovarianceMatrixBlockToeplitzAdd
+          self.CovMatCorner = self.CovarianceMatrixCornerToeplitzAdd
+          self.CovMatCornerDiag = self.CovarianceMatrixCornerDiagToeplitzAdd
+          #raise ValueError("gp_type '{}' not yet supported for Toeplitz matrices!")
       else:
         raise ValueError("gp_type '{}' is not recognised!")
     
@@ -359,19 +366,35 @@ class GP(object):
     Need to define a separate Toeplitz kernel
     """
 
+    #evaluate mean function
+    m = self.mf(p[:self._n_mfp],self.xmf)
+
     #calculate the residuals
-    r = self.y - self.mf(p[:self._n_mfp],self.xmf)
+    r = self.y - m
+
+    #modify likelihood for multiplicative GP?
+    logdetA2 = 0.
+    if self.gp_type == 'mult':
+      # Affine transform of GP
+      # N(m,K) -> N(m,A*C*A), set K = A*C*A
+      # need det(K) = det(A) * det(C) * det(A)
+      # need to solve r^T K^-1 r = r^T (ACA)^-1 r = r^T A^-1 C^-1 A^-1 r,
+      #   where C is Toeplitz, and ACA is not
+      # therefore set r = r/m = A^-1 r and solve for C^-1 r as usual and get det(C)
+      # then modify logdetC to logdetK
+
+      r = r / m # modify r so r = A^-1 r (from affine transform of GP)
+
+      logdetA2 = 2*np.log(m).sum()
 
     #ensure r is an (n x 1) column vector
     r = np.matrix(np.array(r).flatten()).T
 
-    #calculate the log likelihood using the Toplitz kernel
-    #logP = -0.5 * r.T * np.mat(LA.cho_solve(self.ChoFactor[useK],r)) - 0.5 * self.logdetK[useK] - (r.size/2.) * np.log(2*np.pi)
-    #make sure white noise is set to true!
-#    logdetK,self.teop_sol = ToeplitzSolve.LTZSolve(self.toeplitz_kf(self.kf_args,p[:self.n_hp],white_noise=True),r)
-#    logdetK,self.teop_sol = GPT.LTZSolve(GPT.CovarianceMatrixToeplitz(p[self._n_mfp:],self.x,self.kf),r,self.teop_sol)
+    #get log determinant of covariance matrix and solve x = K^-1 r
     logdetK,self.teop_sol = GPT.LTZSolve(self.CovMat_p(p),r,self.teop_sol)
-    logP = -0.5 * r.T * self.teop_sol - 0.5 * logdetK - (r.size/2.) * np.log(2*np.pi)
+
+    #calculate the log likelihood
+    logP = -0.5 * r.T * self.teop_sol - 0.5 * (logdetK + logdetA2) - (r.size/2.) * np.log(2*np.pi)
     
     return np.float(logP)
 
