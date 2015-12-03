@@ -20,6 +20,7 @@ flux = MF.Transit_aRs(mfp,time) + hp[0]*np.sin(2*np.pi*10.*time) + np.random.nor
 #define the GP
 #gp = GeePea.GP(time,flux,p=mfp+hp,mf=MF.Transit_aRs,ep=ep) #using normal SqExponential kernel
 gp = GeePea.GP(time,flux,p=mfp+hp,kf=GeePea.ToeplitzSqExponential,mf=MF.Transit_aRs,ep=ep)
+#gp = GeePea.GP(time,flux,p=mfp+hp,kf=GeePea.SqExponential,mf=MF.Transit_aRs,ep=ep)
 
 #optimise the free parameters
 gp.optimise()

@@ -46,6 +46,8 @@ class GP(object):
     The built in mean function (that returns 0) also has n_par = 0
   k_type - kernel type, defines what type of solver is used. By default is 'Full' (Cholesky)
     solver. Other options are Toeplitz/T and White/W
+  gp_type = 'add' - gp type, default is normal, additive gp.
+    optional multiplicative gp by setting to 'mult' - note that this is experimental
   mf - mean function, by default just returns 0., but needs to be in the format mf(pars,mf_args)
   xmf - arguments to the mf. If identical to x do not need to be specified again
   x_pred - predictive arguments to kernel function, same format as x, requires same no
@@ -69,8 +71,8 @@ class GP(object):
   
   """
   
-  def __init__(self,x,y,p=None,kf=GPK.SqExponential,n_hp=None,n_mfp=None,kernel_type='Full'\
-    ,x_pred=None,mf=None,xmf=None,xmf_pred=None,n_store=1,ep=None,fp=None,logPrior=None,yerr=None):
+  def __init__(self,x,y,p=None,kf=GPK.SqExponential,n_hp=None,n_mfp=None,kernel_type='Full',gp_type='add',
+    x_pred=None,mf=None,xmf=None,xmf_pred=None,n_store=1,ep=None,fp=None,logPrior=None,yerr=None):
     """
     Initialise the GP. See class docstring for a description of the inputs.
     
@@ -104,7 +106,7 @@ class GP(object):
     Set the parameters of the GP. See class docstring for a description of the inputs.
 
     """
-
+    
     #GP parameters
     if y is not None:
       self.y = np.array(y)
@@ -131,6 +133,8 @@ class GP(object):
         kernel_type = kf.kernel_type #overwrite kernel type if given by kernel
         # print "overwriting default kernel type"
       except: pass
+    
+    #set kernel type
     if kernel_type is not None:
       self.kernel_type = kernel_type
       #set likelihood from kernel type
@@ -145,7 +149,33 @@ class GP(object):
           self.yerr = np.ones(self.n)
     if logPrior is not None:
       self.logPrior = logPrior
-
+    
+    #set covariance matrix functions depending on the gp_type    
+    gp_type = 'add'
+    if gp_type is not None:
+      self.gp_type = gp_type
+      if gp_type == 'add': #additive gp
+        if self.kernel_type == 'Full': #normal kernel type
+          self.CovMat_p = self.CovarianceMatrixAdd_p #cov matrix for likelihood calculations
+          self.CovMat = self.CovarianceMatrixFullAdd #full cov matrix of training data
+          self.CovMatBlock = self.CovarianceMatrixBlockAdd #cov matrix block K_s - ie training data vs pred points
+          self.CovMatCorner = self.CovarianceMatrixCornerAdd #cov matrix corner K_ss - pred points with themselves
+          self.CovMatCornerDiag = self.CovarianceMatrixCornerDiagAdd #diagonal of cov matrix corner
+        if self.kernel_type == 'Toeplitz': #toeplitz kernel
+          self.CovMat_p = self.CovarianceMatrixToeplitz_p #cov matrix for likelihood calculations - only returns vector for Toe
+          self.CovMat = self.CovarianceMatrixFullToeplitz
+          self.CovMatBlock = self.CovarianceMatrixBlockToeplitz
+          self.CovMatCorner = self.CovarianceMatrixCornerToeplitz
+          self.CovMatCornerDiag = self.CovarianceMatrixCornerDiagToeplitz
+      #need to add support for multiplicative gp kernels
+      elif gp_type == 'mult':
+        if self.kernel_type == 'Full':
+          pass
+        if self.kernel_type == 'Toeplitz':
+          raise ValueError("gp_type '{}' not yet supported for Toeplitz matrices!")
+      else:
+        raise ValueError("gp_type '{}' is not recognised!")
+    
     #mean function parameters
     if n_hp is not None: self._n_hp = n_hp
     if n_mfp is not None: self._n_mfp = n_mfp
@@ -308,7 +338,8 @@ class GP(object):
       useK = np.where(self.hp_hash == new_hash)[0][0]
     else: #else calculate and store the new hash, cho_factor and logdetK
       useK = self.si = (self.si+1) % self.n_store #increment the store index number
-      self.choFactor[self.si] = LA.cho_factor(GPC.CovarianceMatrix(p[self._n_mfp:],self.x,KernelFunction=self.kf))
+#      self.choFactor[self.si] = LA.cho_factor(GPC.CovarianceMatrix(p[self._n_mfp:],self.x,KernelFunction=self.kf))
+      self.choFactor[self.si] = LA.cho_factor(self.CovMat_p(p[self._n_mfp:]))
       self.logdetK[self.si] = (2*np.log(np.diag(self.choFactor[self.si][0])).sum())
       self.hp_hash[self.si] = new_hash
 
@@ -333,9 +364,10 @@ class GP(object):
     #logP = -0.5 * r.T * np.mat(LA.cho_solve(self.ChoFactor[useK],r)) - 0.5 * self.logdetK[useK] - (r.size/2.) * np.log(2*np.pi)
     #make sure white noise is set to true!
 #    logdetK,self.teop_sol = ToeplitzSolve.LTZSolve(self.toeplitz_kf(self.kf_args,p[:self.n_hp],white_noise=True),r)
-    logdetK,self.teop_sol = GPT.LTZSolve(GPT.CovarianceMatrixToeplitz(p[self._n_mfp:],self.x,self.kf),r,self.teop_sol)
+#    logdetK,self.teop_sol = GPT.LTZSolve(GPT.CovarianceMatrixToeplitz(p[self._n_mfp:],self.x,self.kf),r,self.teop_sol)
+    logdetK,self.teop_sol = GPT.LTZSolve(self.CovMat_p(p[self._n_mfp:]),r,self.teop_sol)
     logP = -0.5 * r.T * self.teop_sol - 0.5 * logdetK - (r.size/2.) * np.log(2*np.pi)
-
+    
     return np.float(logP)
 
   def logLikelihood_white(self,p):
@@ -398,16 +430,19 @@ class GP(object):
 
   def GPRes(self):
     "Return residuals from the GP + mf"
-
+        
     #Construct the covariance matrix
-    if self.kernel_type == 'Full':
-      K = GPC.CovarianceMatrix(self._pars[self._n_mfp:],self.x,KernelFunction=self.kf)
-      K_s = GPC.CovarianceMatrixBlock(self._pars[self._n_mfp:],self.x,self.x,KernelFunction=self.kf)
-      K_ss = GPC.CovarianceMatrixCornerDiag(self._pars[self._n_mfp:],self.x,KernelFunction=self.kf)
-    elif self.kernel_type == 'Toeplitz' or self.kernel_type == 'T':
-      K = GPT.CovarianceMatrixFullToeplitz(self._pars[self._n_mfp:],self.x,self.kf)
-      K_s = GPT.CovarianceMatrixBlockToeplitz(self._pars[self._n_mfp:],self.x,self.x,self.kf)
-      K_ss = GPT.CovarianceMatrixCornerDiagToeplitz(self._pars[self._n_mfp:],self.x,self.kf)
+    K = self.CovMat()
+    K_s = self.CovMatBlock()
+    K_ss = self.CovMatCornerDiag()
+#    if self.kernel_type == 'Full':
+#       K = GPC.CovarianceMatrix(self._pars[self._n_mfp:],self.x,KernelFunction=self.kf)
+#       K_s = GPC.CovarianceMatrixBlock(self._pars[self._n_mfp:],self.x,self.x,KernelFunction=self.kf)
+#       K_ss = GPC.CovarianceMatrixCornerDiag(self._pars[self._n_mfp:],self.x,KernelFunction=self.kf)
+#     elif self.kernel_type == 'Toeplitz' or self.kernel_type == 'T':
+#       K = GPT.CovarianceMatrixFullToeplitz(self._pars[self._n_mfp:],self.x,self.kf)
+#       K_s = GPT.CovarianceMatrixBlockToeplitz(self._pars[self._n_mfp:],self.x,self.x,self.kf)
+#       K_ss = GPT.CovarianceMatrixCornerDiagToeplitz(self._pars[self._n_mfp:],self.x,self.kf)
 
     #Calculate the precision matrix (needs optimised)
     PrecMatrix = np.linalg.inv( np.matrix(K) )
@@ -431,14 +466,17 @@ class GP(object):
             " for x and x_pred.\nUse a 'Full' kernel after optimisation for if not."
 
     #Construct the covariance matrix
-    if self.kernel_type == 'Full':
-      K = GPC.CovarianceMatrix(self._pars[self._n_mfp:],self.x,self.kf)
-      K_s = GPC.CovarianceMatrixBlock(self._pars[self._n_mfp:],self.x_pred,self.x,self.kf)
-      K_ss = GPC.CovarianceMatrixCornerDiag(self._pars[self._n_mfp:],self.x_pred,self.kf,WhiteNoise=wn)
-    elif self.kernel_type == 'Toeplitz' or self.kernel_type == 'T':
-      K = GPT.CovarianceMatrixFullToeplitz(self._pars[self._n_mfp:],self.x,self.kf)
-      K_s = GPT.CovarianceMatrixBlockToeplitz(self._pars[self._n_mfp:],self.x_pred,self.x,self.kf)
-      K_ss = GPT.CovarianceMatrixCornerDiagToeplitz(self._pars[self._n_mfp:],self.x_pred,self.kf,WhiteNoise=wn)
+    K = self.CovMat()
+    K_s = self.CovMatBlock()
+    K_ss = self.CovMatCornerDiag(wn=wn)
+#     if self.kernel_type == 'Full':
+#       K = GPC.CovarianceMatrix(self._pars[self._n_mfp:],self.x,self.kf)
+#       K_s = GPC.CovarianceMatrixBlock(self._pars[self._n_mfp:],self.x_pred,self.x,self.kf)
+#       K_ss = GPC.CovarianceMatrixCornerDiag(self._pars[self._n_mfp:],self.x_pred,self.kf,WhiteNoise=wn)
+#     elif self.kernel_type == 'Toeplitz' or self.kernel_type == 'T':
+#       K = GPT.CovarianceMatrixFullToeplitz(self._pars[self._n_mfp:],self.x,self.kf)
+#       K_s = GPT.CovarianceMatrixBlockToeplitz(self._pars[self._n_mfp:],self.x_pred,self.x,self.kf)
+#       K_ss = GPT.CovarianceMatrixCornerDiagToeplitz(self._pars[self._n_mfp:],self.x_pred,self.kf,WhiteNoise=wn)
 
     #Calculate the precision matrix (needs optimised)
     PrecMatrix = np.linalg.inv( np.matrix(K) )
@@ -485,14 +523,17 @@ class GP(object):
     # if self.mf_args_pred is None: self.mf_args_pred = self.mf_args
 
     #Construct the covariance matrix
-    if self.kernel_type == 'Full':
-      K = GPC.CovarianceMatrix(self._pars[self._n_mfp:],self.x,KernelFunction=self.kf)
-      K_s = GPC.CovarianceMatrixBlock(self._pars[self._n_mfp:],self.x_pred,self.x,KernelFunction=self.kf)
-      K_ss = GPC.CovarianceMatrixCornerFull(self._pars[self._n_mfp:],self.x_pred,KernelFunction=self.kf,WhiteNoise=wn)
-    elif self.kernel_type == 'Toeplitz' or self.kernel_type == 'T':
-      K = GPT.CovarianceMatrixFullToeplitz(self._pars[self._n_mfp:],self.x,self.kf)
-      K_s = GPT.CovarianceMatrixBlockToeplitz(self._pars[self._n_mfp:],self.x_pred,self.x,self.kf)
-      K_ss = GPT.CovarianceMatrixCornerFullToeplitz(self._pars[self._n_mfp:],self.x_pred,self.kf,WhiteNoise=wn)
+    K = self.CovMat()
+    K_s = self.CovMatBlock()
+    K_ss = self.CovMatCorner(wn=wn)
+#     if self.kernel_type == 'Full':
+#       K = GPC.CovarianceMatrix(self._pars[self._n_mfp:],self.x,KernelFunction=self.kf)
+#       K_s = GPC.CovarianceMatrixBlock(self._pars[self._n_mfp:],self.x_pred,self.x,KernelFunction=self.kf)
+#       K_ss = GPC.CovarianceMatrixCornerFull(self._pars[self._n_mfp:],self.x_pred,KernelFunction=self.kf,WhiteNoise=wn)
+#     elif self.kernel_type == 'Toeplitz' or self.kernel_type == 'T':
+#       K = GPT.CovarianceMatrixFullToeplitz(self._pars[self._n_mfp:],self.x,self.kf)
+#       K_s = GPT.CovarianceMatrixBlockToeplitz(self._pars[self._n_mfp:],self.x_pred,self.x,self.kf)
+#       K_ss = GPT.CovarianceMatrixCornerFullToeplitz(self._pars[self._n_mfp:],self.x_pred,self.kf,WhiteNoise=wn)
 
     #get precision matrix
     PrecMatrix = np.linalg.inv( np.matrix(K) )
@@ -513,10 +554,11 @@ class GP(object):
     # if self.mf_args_pred is None: self.mf_args_pred = self.mf_args
 
     #Construct the covariance matrix
-    if self.kernel_type == 'Full':
-      K_ss = GPC.CovarianceMatrixCornerFull(self._pars[self._n_mfp:],self.x_pred,KernelFunction=self.kf,WhiteNoise=wn)
-    elif self.kernel_type == 'Toeplitz' or self.kernel_type == 'T':
-      K_ss = GPT.CovarianceMatrixCornerFullToeplitz(self._pars[self._n_mfp:],self.x_pred,self.kf,WhiteNoise=wn)
+    K_ss = self.CovMatCorner(wn=wn)
+#     if self.kernel_type == 'Full':
+#       K_ss = GPC.CovarianceMatrixCornerFull(self._pars[self._n_mfp:],self.x_pred,KernelFunction=self.kf,WhiteNoise=wn)
+#     elif self.kernel_type == 'Toeplitz' or self.kernel_type == 'T':
+#       K_ss = GPT.CovarianceMatrixCornerFullToeplitz(self._pars[self._n_mfp:],self.x_pred,self.kf,WhiteNoise=wn)
 
     return GPU.RandomVector(K_ss) + self.mf(self._pars[:self._n_mfp], self.xmf_pred)
 
@@ -549,5 +591,68 @@ class GP(object):
     self.plotData()
     self.plotMean()
 
-###############################################################################################################
+  #############################################################################################################
 
+  #wrappers for normal covariance matrix functions
+  def CovarianceMatrixAdd_p(self,p):
+    """return covariance matrix for normal kernel given kernel parameters p"""
+
+    K = GPC.CovarianceMatrix(p,self.x,KernelFunction=self.kf)
+    return K
+
+  def CovarianceMatrixFullAdd(self):
+    """return covariance matrix for normal kernel using current stored parameters"""
+
+    K = GPC.CovarianceMatrix(self._pars[self._n_mfp:],self.x,KernelFunction=self.kf)
+    return K
+
+  def CovarianceMatrixBlockAdd(self):
+    """return covariance matrix block for normal kernel, ie training points vs predictive points"""
+
+    K_s = GPC.CovarianceMatrixBlock(self._pars[self._n_mfp:],self.x_pred,self.x,KernelFunction=self.kf)
+    return K_s
+
+  def CovarianceMatrixCornerAdd(self,wn=True):
+    """return covariance matrix corner for normal kernel, ie predictive points cov with themselves, white noise optional"""
+
+    K_ss = GPC.CovarianceMatrixCornerFull(self._pars[self._n_mfp:],self.x_pred,KernelFunction=self.kf,WhiteNoise=wn)
+    return K_ss
+  
+  def CovarianceMatrixCornerDiagAdd(self,wn=True):
+    """return diagonal of covariance matrix corner for normal kernel, ie predictive points cov with themselves, white noise optional"""
+
+    K_ss = GPC.CovarianceMatrixCornerDiag(self._pars[self._n_mfp:],self.x_pred,KernelFunction=self.kf,WhiteNoise=wn)
+    return K_ss
+  
+  #wrappers for toeplitz covariance matrix functions
+  def CovarianceMatrixToeplitz_p(self,p):
+    """return covariance matrix for toeplitz kernel given kernel parameters p"""
+    
+    K = GPT.CovarianceMatrixToeplitz(p,self.x,self.kf)
+    return K
+
+  def CovarianceMatrixFullToeplitz(self):
+    """return covariance matrix for toeplitz kernel using current stored parameters"""
+
+    K = GPT.CovarianceMatrixFullToeplitz(self._pars[self._n_mfp:],self.x,self.kf)
+    return K
+ 
+  def CovarianceMatrixBlockToeplitz(self):
+    """return covariance matrix block for toeplitz kernel, ie training points vs predictive points"""
+
+    K_s = GPT.CovarianceMatrixBlockToeplitz(self._pars[self._n_mfp:],self.x_pred,self.x,self.kf)
+    return K_s
+
+  def CovarianceMatrixCornerToeplitz(self,wn=True):
+    """return covariance matrix corner for toeplitz kernel, ie predictive points cov with themselves, white noise optional"""
+
+    K_ss = GPT.CovarianceMatrixCornerFullToeplitz(self._pars[self._n_mfp:],self.x_pred,self.kf,WhiteNoise=wn)
+    return K_ss
+
+  def CovarianceMatrixCornerDiagToeplitz(self,wn=True):
+    """return diagonal of covariance matrix corner for toeplitz kernel, ie predictive points cov with themselves, white noise optional"""
+
+    K_ss = GPT.CovarianceMatrixCornerDiagToeplitz(self._pars[self._n_mfp:],self.x_pred,self.kf,WhiteNoise=wn)
+    return K_ss
+  
+###############################################################################################################

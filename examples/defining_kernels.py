@@ -16,7 +16,7 @@ def MySqExponential(X,Y,theta,white_noise=False):
   D2 = GeePea.EuclideanDist2(X,Y,v=1./(np.array(theta[1:-1])))#
   
   #Calculate covariance matrix
-  K = np.e**(theta[0]) * np.exp( - 0.5 * D2 )
+  K = np.exp(2*theta[0]) * np.exp( - 0.5 * D2 )
 
   #Add white noise
   if white_noise is True: K += np.identity(X[:,0].size) * (theta[-1]**2)
