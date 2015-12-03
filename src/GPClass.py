@@ -4,6 +4,7 @@ import scipy.linalg as LA
 import pylab
 
 import GPCovarianceMatrix as GPC
+import GPMultCovarianceMatrix as GPMC
 import GPRegression as GPR
 import GPUtils as GPU
 import GPKernelFunctions as GPK
@@ -97,11 +98,11 @@ class GP(object):
     self.yerr = yerr
 
     #pass arguments to set_pars function to propertly initialise everything
-    self.set_pars(x=x,y=y,p=p,kf=kf,n_hp=n_hp,n_mfp=n_mfp,kernel_type=kernel_type,
+    self.set_pars(x=x,y=y,p=p,kf=kf,n_hp=n_hp,n_mfp=n_mfp,kernel_type=kernel_type,gp_type=gp_type,
       x_pred=x_pred,mf=mf,xmf=xmf,xmf_pred=xmf_pred,n_store=n_store,ep=ep,fp=fp,logPrior=logPrior,yerr=yerr)
 
   def set_pars(self,x=None,y=None,p=None,kf=None,n_hp=None,n_mfp=None,kernel_type=None,
-    x_pred=None,mf=None,xmf=None,xmf_pred=None,n_store=None,ep=None,fp=None,logPrior=None,yerr=None):
+    x_pred=None,mf=None,xmf=None,xmf_pred=None,n_store=None,ep=None,fp=None,logPrior=None,yerr=None,gp_type=None):
     """
     Set the parameters of the GP. See class docstring for a description of the inputs.
 
@@ -151,7 +152,6 @@ class GP(object):
       self.logPrior = logPrior
     
     #set covariance matrix functions depending on the gp_type    
-    gp_type = 'add'
     if gp_type is not None:
       self.gp_type = gp_type
       if gp_type == 'add': #additive gp
@@ -169,8 +169,13 @@ class GP(object):
           self.CovMatCornerDiag = self.CovarianceMatrixCornerDiagToeplitz
       #need to add support for multiplicative gp kernels
       elif gp_type == 'mult':
+        print "warning: Support for multiplicative GPs is experimental."
         if self.kernel_type == 'Full':
-          pass
+          self.CovMat_p = self.CovarianceMatrixMult_p #cov matrix for likelihood calculations
+          self.CovMat = self.CovarianceMatrixFullMult #full cov matrix of training data
+          self.CovMatBlock = self.CovarianceMatrixBlockMult #cov matrix block K_s - ie training data vs pred points
+          self.CovMatCorner = self.CovarianceMatrixCornerMult #cov matrix corner K_ss - pred points with themselves
+          self.CovMatCornerDiag = self.CovarianceMatrixCornerDiagMult #diagonal of cov matrix corner
         if self.kernel_type == 'Toeplitz':
           raise ValueError("gp_type '{}' not yet supported for Toeplitz matrices!")
       else:
@@ -339,13 +344,13 @@ class GP(object):
     else: #else calculate and store the new hash, cho_factor and logdetK
       useK = self.si = (self.si+1) % self.n_store #increment the store index number
 #      self.choFactor[self.si] = LA.cho_factor(GPC.CovarianceMatrix(p[self._n_mfp:],self.x,KernelFunction=self.kf))
-      self.choFactor[self.si] = LA.cho_factor(self.CovMat_p(p[self._n_mfp:]))
+      self.choFactor[self.si] = LA.cho_factor(self.CovMat_p(p))
       self.logdetK[self.si] = (2*np.log(np.diag(self.choFactor[self.si][0])).sum())
       self.hp_hash[self.si] = new_hash
-
+    
     #calculate the log likelihood
     logP = -0.5 * r.T * np.mat(LA.cho_solve(self.choFactor[useK],r)) - 0.5 * self.logdetK[useK] - (r.size/2.) * np.log(2*np.pi)
-
+    
     return np.float(logP)
 
   def logLikelihood_toeplitz(self,p):
@@ -365,7 +370,7 @@ class GP(object):
     #make sure white noise is set to true!
 #    logdetK,self.teop_sol = ToeplitzSolve.LTZSolve(self.toeplitz_kf(self.kf_args,p[:self.n_hp],white_noise=True),r)
 #    logdetK,self.teop_sol = GPT.LTZSolve(GPT.CovarianceMatrixToeplitz(p[self._n_mfp:],self.x,self.kf),r,self.teop_sol)
-    logdetK,self.teop_sol = GPT.LTZSolve(self.CovMat_p(p[self._n_mfp:]),r,self.teop_sol)
+    logdetK,self.teop_sol = GPT.LTZSolve(self.CovMat_p(p),r,self.teop_sol)
     logP = -0.5 * r.T * self.teop_sol - 0.5 * logdetK - (r.size/2.) * np.log(2*np.pi)
     
     return np.float(logP)
@@ -595,9 +600,9 @@ class GP(object):
 
   #wrappers for normal covariance matrix functions
   def CovarianceMatrixAdd_p(self,p):
-    """return covariance matrix for normal kernel given kernel parameters p"""
-
-    K = GPC.CovarianceMatrix(p,self.x,KernelFunction=self.kf)
+    """return covariance matrix for normal kernel given full parameter set p"""
+    
+    K = GPC.CovarianceMatrix(p[self._n_mfp:],self.x,KernelFunction=self.kf)
     return K
 
   def CovarianceMatrixFullAdd(self):
@@ -624,11 +629,12 @@ class GP(object):
     K_ss = GPC.CovarianceMatrixCornerDiag(self._pars[self._n_mfp:],self.x_pred,KernelFunction=self.kf,WhiteNoise=wn)
     return K_ss
   
+  #############################################################################################################
   #wrappers for toeplitz covariance matrix functions
   def CovarianceMatrixToeplitz_p(self,p):
-    """return covariance matrix for toeplitz kernel given kernel parameters p"""
-    
-    K = GPT.CovarianceMatrixToeplitz(p,self.x,self.kf)
+    """return covariance matrix for toeplitz kernel given full parameter set p"""
+
+    K = GPT.CovarianceMatrixToeplitz(p[self._n_mfp:],self.x,self.kf)
     return K
 
   def CovarianceMatrixFullToeplitz(self):
@@ -653,6 +659,43 @@ class GP(object):
     """return diagonal of covariance matrix corner for toeplitz kernel, ie predictive points cov with themselves, white noise optional"""
 
     K_ss = GPT.CovarianceMatrixCornerDiagToeplitz(self._pars[self._n_mfp:],self.x_pred,self.kf,WhiteNoise=wn)
+    return K_ss
+
+  #############################################################################################################
+  #wrappers for multiplicative/normal covariance matrix functions
+  def CovarianceMatrixMult_p(self,p):
+    """return covariance matrix for normal kernel given full parameter set p"""
+    
+    K = GPMC.CovarianceMatrixMult(p[self._n_mfp:],self.x,self.kf,
+      self.mf,p[:self._n_mfp],self.xmf)
+    return K
+
+  def CovarianceMatrixFullMult(self):
+    """return covariance matrix for normal kernel using current stored parameters"""
+
+    K = GPMC.CovarianceMatrixMult(self._pars[self._n_mfp:],self.x,self.kf,
+      self.mf,self._pars[:self._n_mfp],self.xmf)
+    return K
+
+  def CovarianceMatrixBlockMult(self):
+    """return covariance matrix block for normal kernel, ie training points vs predictive points"""
+
+    K_s = GPMC.CovarianceMatrixBlockMult(self._pars[self._n_mfp:],self.x_pred,self.x,self.kf,
+      self.mf,self._pars[:self._n_mfp],self.xmf_pred,self.xmf)
+    return K_s
+
+  def CovarianceMatrixCornerMult(self,wn=True):
+    """return covariance matrix corner for normal kernel, ie predictive points cov with themselves, white noise optional"""
+
+    K_ss = GPMC.CovarianceMatrixCornerFullMult(self._pars[self._n_mfp:],self.x_pred,self.kf,
+      self.mf,self._pars[:self._n_mfp],self.xmf_pred,WhiteNoise=wn)
+    return K_ss
+  
+  def CovarianceMatrixCornerDiagMult(self,wn=True):
+    """return diagonal of covariance matrix corner for normal kernel, ie predictive points cov with themselves, white noise optional"""
+
+    K_ss = GPMC.CovarianceMatrixCornerDiagMult(self._pars[self._n_mfp:],self.x_pred,self.kf,
+      self.mf,self._pars[:self._n_mfp],self.xmf_pred,WhiteNoise=wn)
     return K_ss
   
 ###############################################################################################################
