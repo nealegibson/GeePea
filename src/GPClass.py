@@ -162,11 +162,11 @@ class GP(object):
           self.CovMatCorner = self.CovarianceMatrixCornerAdd #cov matrix corner K_ss - pred points with themselves
           self.CovMatCornerDiag = self.CovarianceMatrixCornerDiagAdd #diagonal of cov matrix corner
         if self.kernel_type == 'Toeplitz': #toeplitz kernel
-          self.CovMat_p = self.CovarianceMatrixToeplitz_p #cov matrix for likelihood calculations - only returns vector for Toe
-          self.CovMat = self.CovarianceMatrixFullToeplitz
-          self.CovMatBlock = self.CovarianceMatrixBlockToeplitz
-          self.CovMatCorner = self.CovarianceMatrixCornerToeplitz
-          self.CovMatCornerDiag = self.CovarianceMatrixCornerDiagToeplitz
+          self.CovMat_p = self.CovarianceMatrixToeplitzAdd_p #cov matrix for likelihood calculations - only returns vector for Toe
+          self.CovMat = self.CovarianceMatrixFullToeplitzAdd
+          self.CovMatBlock = self.CovarianceMatrixBlockToeplitzAdd
+          self.CovMatCorner = self.CovarianceMatrixCornerToeplitzAdd
+          self.CovMatCornerDiag = self.CovarianceMatrixCornerDiagToeplitzAdd
       #need to add support for multiplicative gp kernels
       elif gp_type == 'mult':
         print "warning: Support for multiplicative GPs is experimental."
@@ -631,31 +631,31 @@ class GP(object):
   
   #############################################################################################################
   #wrappers for toeplitz covariance matrix functions
-  def CovarianceMatrixToeplitz_p(self,p):
+  def CovarianceMatrixToeplitzAdd_p(self,p):
     """return covariance matrix for toeplitz kernel given full parameter set p"""
 
     K = GPT.CovarianceMatrixToeplitz(p[self._n_mfp:],self.x,self.kf)
     return K
 
-  def CovarianceMatrixFullToeplitz(self):
+  def CovarianceMatrixFullToeplitzAdd(self):
     """return covariance matrix for toeplitz kernel using current stored parameters"""
 
     K = GPT.CovarianceMatrixFullToeplitz(self._pars[self._n_mfp:],self.x,self.kf)
     return K
  
-  def CovarianceMatrixBlockToeplitz(self):
+  def CovarianceMatrixBlockToeplitzAdd(self):
     """return covariance matrix block for toeplitz kernel, ie training points vs predictive points"""
 
     K_s = GPT.CovarianceMatrixBlockToeplitz(self._pars[self._n_mfp:],self.x_pred,self.x,self.kf)
     return K_s
 
-  def CovarianceMatrixCornerToeplitz(self,wn=True):
+  def CovarianceMatrixCornerToeplitzAdd(self,wn=True):
     """return covariance matrix corner for toeplitz kernel, ie predictive points cov with themselves, white noise optional"""
 
     K_ss = GPT.CovarianceMatrixCornerFullToeplitz(self._pars[self._n_mfp:],self.x_pred,self.kf,WhiteNoise=wn)
     return K_ss
 
-  def CovarianceMatrixCornerDiagToeplitz(self,wn=True):
+  def CovarianceMatrixCornerDiagToeplitzAdd(self,wn=True):
     """return diagonal of covariance matrix corner for toeplitz kernel, ie predictive points cov with themselves, white noise optional"""
 
     K_ss = GPT.CovarianceMatrixCornerDiagToeplitz(self._pars[self._n_mfp:],self.x_pred,self.kf,WhiteNoise=wn)
@@ -699,3 +699,42 @@ class GP(object):
     return K_ss
   
 ###############################################################################################################
+  #wrappers for multiplicative/toeplitz covariance matrix functions
+#   def CovarianceMatrixToeplitzMult_p(self,p):
+#     """return covariance matrix for toeplitz kernel given full parameter set p"""
+#     
+#     K = GPT.CovarianceMatrixToeplitz(p[self._n_mfp:],self.x,self.kf)
+#     return K
+
+  def CovarianceMatrixFullToeplitzMult(self):
+    """return covariance matrix for toeplitz kernel using current stored parameters"""
+    self._pars[self._n_mfp:]
+    self._pars[:self._n_mfp]
+    
+    #get additive covariance matrix
+    K = LA.toeplitz(ToeplitzKernel(X,X,theta,white_noise=False))
+        
+    #get mean function
+    m = self.mf(self._pars[:self._n_mfp],self.xmf)
+    
+    return K
+ 
+  def CovarianceMatrixBlockToeplitzMult(self):
+    """return covariance matrix block for toeplitz kernel, ie training points vs predictive points"""
+
+    K_s = GPT.CovarianceMatrixBlockToeplitz(self._pars[self._n_mfp:],self.x_pred,self.x,self.kf)
+    return K_s
+
+  def CovarianceMatrixCornerToeplitzMult(self,wn=True):
+    """return covariance matrix corner for toeplitz kernel, ie predictive points cov with themselves, white noise optional"""
+
+    K_ss = GPT.CovarianceMatrixCornerFullToeplitz(self._pars[self._n_mfp:],self.x_pred,self.kf,WhiteNoise=wn)
+    return K_ss
+
+  def CovarianceMatrixCornerDiagToeplitzMult(self,wn=True):
+    """return diagonal of covariance matrix corner for toeplitz kernel, ie predictive points cov with themselves, white noise optional"""
+
+    K_ss = GPT.CovarianceMatrixCornerDiagToeplitz(self._pars[self._n_mfp:],self.x_pred,self.kf,WhiteNoise=wn)
+    return K_ss
+
+  #############################################################################################################
