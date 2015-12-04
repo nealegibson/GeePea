@@ -97,6 +97,99 @@ def CovarianceMatrixCornerFullToeplitz(theta,X,ToeplitzKernel,WhiteNoise=True):
 
 ##########################################################################################
 
+def CovarianceMatrixFullToeplitzMult(theta,X,ToeplitzKernel,mf,mf_pars,mf_args):
+  """
+  Toeplitz equivelent of the CovarianceMatrix function to construct the Toeplitz matrix
+  using the same format, using multiplicative/affine transform MCMC
+
+  """
+  
+  #get mean function
+  m = mf(mf_pars,mf_args) * np.ones(X.shape[0])
+  #full cov matrix
+  K = np.mat(LA.toeplitz(ToeplitzKernel(X,X,theta,white_noise=False)))
+
+  #calculate the affine transform
+  Kp = np.diag(m) * K * np.diag(m)
+  
+  #Finally add the white noise to the diagonal of the full matrix
+  Kp += (np.identity(X.shape[0]) * (theta[-1]**2))
+
+  return np.matrix(Kp)
+
+def CovarianceMatrixBlockToeplitzMult(theta,X,Y,ToeplitzKernel,mf,mf_pars,mf_args_pred,mf_args):
+  """
+  X - input matrix (q x D) - of training points
+  Y - input matrix (n x D) - of predictive points
+  theta - hyperparameter array/list
+  K - (q x n) covariance matrix block
+
+  Note that this only works when the step sizes are the same for X and Y, toplitz
+  usaully 1D!
+
+  """
+
+  a = ToeplitzKernel(X,Y,theta,white_noise=False) #length q
+  b = ToeplitzKernel(Y,X,theta,white_noise=False) #length n
+
+  #return q x n matrix block
+  K = LA.toeplitz(a,b)
+  
+  #get mean function
+  m = mf(mf_pars,mf_args) * np.ones(Y.shape[0])
+  #and predictive mean
+  ms = mf(mf_pars,mf_args_pred) * np.ones(X.shape[0])
+  #and calculate the affine transform
+  Kp = np.diag(ms) * np.matrix(K) * np.diag(m)
+  
+  return np.matrix(Kp)
+
+def CovarianceMatrixCornerDiagToeplitzMult(theta,X,ToeplitzKernel,mf,mf_pars,mf_args_pred,WhiteNoise=True):
+  """
+  X - input matrix (q x D) - of training points
+  theta - hyperparameter array/list
+  K - (q x q) covariance matrix corner block - only diagonal terms are returned
+    (this function needs optimised as it calculates the whole covariance matrix first...)
+  """
+  
+  #get covariance matrix
+  K = LA.toeplitz(ToeplitzKernel(X,X,theta,white_noise=False))
+  
+  #predictive mean
+  ms = mf(mf_pars,mf_args_pred) * np.ones(X.shape[0])
+
+  #get affine transform
+  Kp = np.diag(ms) * np.matrix(K) * np.diag(ms)
+
+  #add white noise?
+  if WhiteNoise: Kp += (np.identity(X.shape[0]) * (theta[-1]**2))
+  
+  #diagonalise the cov matrix - needs optimised but not usually a bottleneck...
+  Kp = np.diag(np.diag(Kp))
+
+  return np.matrix(Kp)
+
+def CovarianceMatrixCornerFullToeplitzMult(theta,X,ToeplitzKernel,mf,mf_pars,mf_args_pred,WhiteNoise=True):
+  """
+  X - input matrix (q x D) - of training points
+  theta - hyperparameter array/list
+  K - (q x q) covariance matrix corner block
+  """
+
+  #get normal additive cov matrix
+  K = LA.toeplitz(ToeplitzKernel(X,X,theta,white_noise=False))
+  
+  #predictive mean
+  ms = mf(mf_pars,mf_args_pred) * np.ones(X.shape[0])
+  #get affine transform
+  Kp = np.diag(ms) * np.matrix(K) * np.diag(ms)
+  #add white noise?
+  if WhiteNoise: Kp += (np.identity(X.shape[0]) * (theta[-1]**2))
+
+  return np.matrix(Kp)
+
+##########################################################################################
+
 #run test
 if __name__ == '__main__':
   

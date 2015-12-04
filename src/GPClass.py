@@ -49,6 +49,17 @@ class GP(object):
     solver. Other options are Toeplitz/T and White/W
   gp_type = 'add' - gp type, default is normal, additive gp.
     optional multiplicative gp by setting to 'mult' - note that this is experimental
+    mult GPs are based on an affine transform of the GP, suggested by T. Evans.
+    Typially they don't change inference of light curve parameters, but often worth checking,
+    particularly for large systematics
+        x ~ N(mu,Sig)
+        if y = c + B * mu
+        y ~ N(c+B*mu,B*Sig*B.T)
+    and the kernels take the form:
+      K' = diag(mf) * K * diag(mf) + d**2 #where d are the uncertainties
+      Kss' = diag(mf_ss) * Kss * diag(mf_ss) + dss**2
+      Ks' = diag(mf_ss) * Ks * diag(mf)
+    Note that the white noise is added to the diagonal after the affine transform!
   mf - mean function, by default just returns 0., but needs to be in the format mf(pars,mf_args)
   xmf - arguments to the mf. If identical to x do not need to be specified again
   x_pred - predictive arguments to kernel function, same format as x, requires same no
@@ -169,7 +180,9 @@ class GP(object):
           self.CovMatCornerDiag = self.CovarianceMatrixCornerDiagToeplitzAdd
       #need to add support for multiplicative gp kernels
       elif gp_type == 'mult':
-        print "warning: Support for multiplicative GPs is experimental."
+        print "############################################################"
+        print "# warning: Support for multiplicative GPs is experimental. #"
+        print "############################################################"
         if self.kernel_type == 'Full':
           self.CovMat_p = self.CovarianceMatrixMult_p #cov matrix for likelihood calculations
           self.CovMat = self.CovarianceMatrixFullMult #full cov matrix of training data
@@ -180,10 +193,10 @@ class GP(object):
           #use same cov matrix for likelihood calculation, toeplitz likelihood is modified for this
           self.CovMat_p = self.CovarianceMatrixToeplitzAdd_p #cov matrix for likelihood calculations - only returns vector for Toe
           #new functions to return full cov matrices after affine transform for toeplitz/multiplicative
-          self.CovMat = self.CovarianceMatrixFullToeplitzAdd
-          self.CovMatBlock = self.CovarianceMatrixBlockToeplitzAdd
-          self.CovMatCorner = self.CovarianceMatrixCornerToeplitzAdd
-          self.CovMatCornerDiag = self.CovarianceMatrixCornerDiagToeplitzAdd
+          self.CovMat = self.CovarianceMatrixFullToeplitzMult
+          self.CovMatBlock = self.CovarianceMatrixBlockToeplitzMult
+          self.CovMatCorner = self.CovarianceMatrixCornerToeplitzMult
+          self.CovMatCornerDiag = self.CovarianceMatrixCornerDiagToeplitzMult
           #raise ValueError("gp_type '{}' not yet supported for Toeplitz matrices!")
       else:
         raise ValueError("gp_type '{}' is not recognised!")
@@ -543,6 +556,9 @@ class GP(object):
     pars = OP.Optimise(self.logPosterior,self._pars,(),fixed=self.fp,method='NM',**kwargs)
     self.pars(pars)
 
+  #create alias for optimise function
+  opt = optimise
+
   def getRandomVector(self,wn=False):
     "Returns a random vector from the conditioned GP"
 
@@ -731,33 +747,31 @@ class GP(object):
 
   def CovarianceMatrixFullToeplitzMult(self):
     """return covariance matrix for toeplitz kernel using current stored parameters"""
-    self._pars[self._n_mfp:]
-    self._pars[:self._n_mfp]
-    
-    #get additive covariance matrix
-    K = LA.toeplitz(ToeplitzKernel(X,X,theta,white_noise=False))
-        
-    #get mean function
-    m = self.mf(self._pars[:self._n_mfp],self.xmf)
-    
+
+    K = GPT.CovarianceMatrixFullToeplitzMult(self._pars[self._n_mfp:],self.x,self.kf,
+      self.mf,self._pars[:self._n_mfp],self.xmf)
+
     return K
- 
+
   def CovarianceMatrixBlockToeplitzMult(self):
     """return covariance matrix block for toeplitz kernel, ie training points vs predictive points"""
 
-    K_s = GPT.CovarianceMatrixBlockToeplitz(self._pars[self._n_mfp:],self.x_pred,self.x,self.kf)
+    K_s = GPT.CovarianceMatrixBlockToeplitzMult(self._pars[self._n_mfp:],self.x_pred,self.x,self.kf,
+      self.mf,self._pars[:self._n_mfp],self.xmf_pred,self.xmf)
     return K_s
 
   def CovarianceMatrixCornerToeplitzMult(self,wn=True):
     """return covariance matrix corner for toeplitz kernel, ie predictive points cov with themselves, white noise optional"""
 
-    K_ss = GPT.CovarianceMatrixCornerFullToeplitz(self._pars[self._n_mfp:],self.x_pred,self.kf,WhiteNoise=wn)
+    K_ss = GPT.CovarianceMatrixCornerFullToeplitzMult(self._pars[self._n_mfp:],self.x_pred,self.kf,
+      self.mf,self._pars[:self._n_mfp],self.xmf_pred,WhiteNoise=wn)
     return K_ss
 
   def CovarianceMatrixCornerDiagToeplitzMult(self,wn=True):
     """return diagonal of covariance matrix corner for toeplitz kernel, ie predictive points cov with themselves, white noise optional"""
 
-    K_ss = GPT.CovarianceMatrixCornerDiagToeplitz(self._pars[self._n_mfp:],self.x_pred,self.kf,WhiteNoise=wn)
+    K_ss = GPT.CovarianceMatrixCornerDiagToeplitzMult(self._pars[self._n_mfp:],self.x_pred,self.kf,
+      self.mf,self._pars[:self._n_mfp],self.xmf_pred,WhiteNoise=wn)
     return K_ss
 
   #############################################################################################################
