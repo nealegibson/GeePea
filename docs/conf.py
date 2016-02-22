@@ -35,7 +35,7 @@ extensions = [
 #    'sphinx.ext.mathjax',
     'sphinx.ext.pngmath',
 #    'matplotlib.sphinxext.plot_directive',
-    'IPython.sphinxext.ipython_directive',
+#    'IPython.sphinxext.ipython_directive',
     'numpydoc',
 ]
 
