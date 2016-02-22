@@ -78,8 +78,6 @@ We can also plot the current state::
   gp = GeePea.GP(x,y,p=mfp+hp,mf=my_mean_func)
   gp.plot()
   
-  print "test"
-
 .. image:: images/mean_functions1.png
 
 The red dotted line plots the mean function here. Obviously, the guess parameters do
