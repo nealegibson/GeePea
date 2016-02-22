@@ -1,0 +1,165 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Getting started &mdash; GeePea 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="GeePea 1.0 documentation" href="index.html" />
+    <link rel="next" title="Using Mean Functions" href="mean_functions.html" />
+    <link rel="prev" title="GPs in a nutshell" href="gps.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="mean_functions.html" title="Using Mean Functions"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="gps.html" title="GPs in a nutshell"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="getting-started">
+<span id="id1"></span><h1>Getting started<a class="headerlink" href="#getting-started" title="Permalink to this headline">¶</a></h1>
+<p>First import the module, and almost always numpy too:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">GeePea</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+</pre></div>
+</div>
+<p>Next, define some simple data:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">50</span><span class="p">)</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mf">0.1</span><span class="p">,</span><span class="n">x</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>We also need to define the initial parameters of the GP. By default, we have a zero mean function
+and are using the <a class="reference internal" href="normal_kernels.html#GeePea.SqExponential" title="GeePea.SqExponential"><code class="xref py py-func docutils literal"><span class="pre">squared</span> <span class="pre">exponential</span> <span class="pre">kernel</span></code></a>. For a 1D input this takes three parameters, a height
+scale, length scale, and white noise:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">p</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mf">0.1</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>Now we are ready to define our simple GP as follows:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">gp</span> <span class="o">=</span> <span class="n">GeePea</span><span class="o">.</span><span class="n">GP</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">p</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>And we can plot out data along with the GP regression:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">gp</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>A useful exercise is to explore how the GP behaves with varying hyperparmeters - try changing the
+height scales and length scales to see how the fit changes. In general however, we should not
+arbitrarily pick the hyperparameters. The simplest thing we can do is optimise our GP likelihood
+with respect to the parameters:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">gp</span><span class="o">.</span><span class="n">optimise</span><span class="p">()</span> <span class="c"># by default uses the scipy Nelder-Mead simplex fmin</span>
+<span class="n">gp</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>And we have our first GP fit to data!</p>
+<p>(<a class="reference external" href=".//getting_started-1.py">Source code</a>, <a class="reference external" href=".//getting_started-1.png">png</a>, <a class="reference external" href=".//getting_started-1.hires.png">hires.png</a>, <a class="reference external" href=".//getting_started-1.pdf">pdf</a>)</p>
+<div class="figure">
+<img alt="_images/getting_started-1.png" src="_images/getting_started-1.png" />
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">GeePea</a></h1>
+
+
+
+
+
+
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="gps.html"
+                        title="previous chapter">GPs in a nutshell</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="mean_functions.html"
+                        title="next chapter">Using Mean Functions</a></p><h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="introduction.html#installation">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="gps.html">GPs in a nutshell</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">Getting started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mean_functions.html">Using Mean Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="kernel_selection.html">Defining kernels</a></li>
+<li class="toctree-l1"><a class="reference internal" href="regression.html">Regression using GPs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="light_curve_eg.html">Fitting a transit light curve</a></li>
+<li class="toctree-l1"><a class="reference internal" href="inference.html">Inference of hyperparameters</a></li>
+<li class="toctree-l1"><a class="reference internal" href="normal_kernels.html">Built-in &#8216;normal&#8217; kernels</a></li>
+<li class="toctree-l1"><a class="reference internal" href="toeplitz_kernels.html">Built-in Toeplitz kernels</a></li>
+</ul>
+
+
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2015, Neale Gibson.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.3</a>
+      
+      |
+      <a href="_sources/getting_started.txt"
+          rel="nofollow">Page source</a></li>
+    </div>
+
+    
+
+    
+  </body>
+</html>

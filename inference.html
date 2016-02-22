@@ -1,0 +1,231 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Inference of hyperparameters &mdash; GeePea 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="GeePea 1.0 documentation" href="index.html" />
+    <link rel="next" title="Built-in ‘normal’ kernels" href="normal_kernels.html" />
+    <link rel="prev" title="Fitting a transit light curve" href="light_curve_eg.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="normal_kernels.html" title="Built-in ‘normal’ kernels"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="light_curve_eg.html" title="Fitting a transit light curve"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="inference-of-hyperparameters">
+<h1>Inference of hyperparameters<a class="headerlink" href="#inference-of-hyperparameters" title="Permalink to this headline">¶</a></h1>
+<p>In general, we don&#8217;t want a point estimate of the kernel hyperparamters and mean function
+parameters, but instead want to obtain the posterior distributions. This can easily be done
+using the <code class="xref py py-func docutils literal"><span class="pre">GeePea.logLikelihood()</span></code> and <code class="xref py py-func docutils literal"><span class="pre">GeePea.logPosterior()</span></code> methods, which can
+be used for optimisation and sampling the posterior using your favorite methods.</p>
+<p>This simple example will follow on from the light curve example, and use MCMC functions from my
+&#8216;Infer&#8217; module (also available from <a class="reference external" href="https://github.com/nealegibson/">https://github.com/nealegibson/</a>). See the Infer docstrings for
+more info, this will only give a simple MCMC eg. Just import the modules and define the light curve in
+the same way as before:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">GeePea</span>
+<span class="kn">import</span> <span class="nn">MyFuncs</span> <span class="kn">as</span> <span class="nn">MF</span>
+<span class="kn">import</span> <span class="nn">Infer</span>
+
+<span class="n">time</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mf">0.1</span><span class="p">,</span><span class="mf">0.1</span><span class="p">,</span><span class="mi">200</span><span class="p">)</span>
+<span class="n">mfp</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.</span><span class="p">,</span><span class="mf">2.5</span><span class="p">,</span><span class="mf">11.</span><span class="p">,</span><span class="o">.</span><span class="mi">1</span><span class="p">,</span><span class="mf">0.6</span><span class="p">,</span><span class="mf">0.2</span><span class="p">,</span><span class="mf">0.3</span><span class="p">,</span><span class="mf">1.</span><span class="p">,</span><span class="mf">0.</span><span class="p">]</span>
+
+<span class="n">flux</span> <span class="o">=</span> <span class="n">MF</span><span class="o">.</span><span class="n">Transit_aRs</span><span class="p">(</span><span class="n">par</span><span class="p">,</span><span class="n">time</span><span class="p">)</span>
+
+<span class="n">hp</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0003</span><span class="p">,</span><span class="mf">0.1</span><span class="p">,</span><span class="mf">0.0003</span><span class="p">]</span>
+
+<span class="c">#create the data set (ie training data) with some simulated systematics</span>
+<span class="n">flux</span> <span class="o">=</span> <span class="n">MF</span><span class="o">.</span><span class="n">Transit_aRs</span><span class="p">(</span><span class="n">mfp</span><span class="p">,</span><span class="n">time</span><span class="p">)</span> <span class="o">+</span> <span class="n">hp</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="mf">10.</span><span class="o">*</span><span class="n">time</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">hp</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span><span class="n">time</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+
+<span class="n">ep</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0001</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mf">0.1</span><span class="p">,</span><span class="mf">0.001</span><span class="p">,</span><span class="mf">0.01</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mf">0.0001</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mf">0.0001</span><span class="p">,</span><span class="mf">0.001</span><span class="p">,</span><span class="mf">0.00001</span><span class="p">]</span>
+
+<span class="c">#or using a toeplitz kernel</span>
+<span class="n">gp</span> <span class="o">=</span> <span class="n">GeePea</span><span class="o">.</span><span class="n">GP</span><span class="p">(</span><span class="n">time</span><span class="p">,</span><span class="n">flux</span><span class="p">,</span><span class="n">p</span><span class="o">=</span><span class="n">mfp</span><span class="o">+</span><span class="n">hp</span><span class="p">,</span><span class="n">kf</span><span class="o">=</span><span class="n">GeePea</span><span class="o">.</span><span class="n">ToeplitzSqExponential</span><span class="p">,</span><span class="n">mf</span><span class="o">=</span><span class="n">MF</span><span class="o">.</span><span class="n">Transit_aRs</span><span class="p">,</span><span class="n">ep</span><span class="o">=</span><span class="n">ep</span><span class="p">)</span>
+
+<span class="n">gp</span><span class="o">.</span><span class="n">optimise</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>The methods <code class="xref py py-func docutils literal"><span class="pre">GeePea.logLikelihood()</span></code> and <code class="xref py py-func docutils literal"><span class="pre">GeePea.logPosterior()</span></code> can easily be called
+as follows:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">gp</span><span class="o">.</span><span class="n">logLikelihood</span><span class="p">(</span><span class="n">gp</span><span class="o">.</span><span class="n">p</span><span class="p">)</span>
+<span class="n">gp</span><span class="o">.</span><span class="n">logPosterior</span><span class="p">(</span><span class="n">gp</span><span class="o">.</span><span class="n">p</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Both methods simply take in one argument, which is a list of parameters (mf + kf). The log posterior also
+evaluates the log prior which is added to the log likelihood. By default this restricts the kernel
+hyperparmeters to be positive, but otherwise is flat, i.e:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">logPrior</span><span class="p">(</span><span class="n">p</span><span class="p">,</span><span class="n">nhp</span><span class="p">):</span>
+  <span class="c">#keep all kernel hyperparameters &gt;=0</span>
+  <span class="k">return</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span> <span class="k">if</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="o">-</span><span class="n">nhp</span><span class="p">:])</span><span class="o">&lt;</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">()</span> <span class="k">else</span> <span class="mf">0.</span>
+</pre></div>
+</div>
+<p>This can easily be redefined as:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">gp</span><span class="o">.</span><span class="n">logPrior</span> <span class="o">=</span> <span class="n">MyPrior</span>
+</pre></div>
+</div>
+<p>where MyPrior is a user defined function. Just ensure that it is passed the parameter vector and
+an additional parameter, nhp, which is simply the number of kernel hyperparameters
+(you don&#8217;t need to use it, but it must be passed!). e.g. if you just want flat priors:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">gp</span><span class="o">.</span><span class="n">logPrior</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">p</span><span class="p">,</span><span class="n">nhp</span><span class="p">:</span> <span class="mf">0.</span>
+</pre></div>
+</div>
+<p>Or alternatively just use the logLikelihood for inference (note that gp.optimise uses the logPrior).
+Now we are ready to call our MCMC (this e.g. uses two simultaneous chains, with step sizes updated
+using the covariance matrix, i.e. orthogonal stepping):</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">lims</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">10000</span><span class="p">,</span><span class="mi">4</span><span class="p">)</span>
+<span class="n">Infer</span><span class="o">.</span><span class="n">MCMC_N</span><span class="p">(</span><span class="n">gp</span><span class="o">.</span><span class="n">logPosterior</span><span class="p">,</span><span class="n">gp</span><span class="o">.</span><span class="n">p</span><span class="p">,(),</span><span class="mi">20000</span><span class="p">,</span><span class="n">gp</span><span class="o">.</span><span class="n">ep</span><span class="p">,</span><span class="n">N</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="n">adapt_limits</span><span class="o">=</span><span class="n">lims</span><span class="p">,</span><span class="n">glob_limits</span><span class="o">=</span><span class="n">lims</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This passes the logPosterior as the first argument, followed by the initial parameters - the empty
+tuple is additional arguments to the posterior function (none in this case). You also need to
+provide a chain length (20000), an array of (initial) error estimates corresponding to the input
+params, the number of chains (2). The final arguments control the adaptive step sizes, where the
+step sizes are adapted between 0 and 10000, and done at 4 equally spaced intervals. See the
+Infer module for more details.</p>
+<p>Once the chains are computed, we can extract marginalised posteriors for our parameters and make
+correlation plots as follows:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">gp</span><span class="o">.</span><span class="n">p</span><span class="p">,</span><span class="n">gp</span><span class="o">.</span><span class="n">ep</span> <span class="o">=</span> <span class="n">Infer</span><span class="o">.</span><span class="n">AnalyseChains</span><span class="p">(</span><span class="mi">10000</span><span class="p">,</span><span class="n">n_chains</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+<span class="n">pylab</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+<span class="n">gp</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span> <span class="c">#plot the gp</span>
+
+<span class="n">pylab</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+<span class="c"># make correlation plots of all variable parameters</span>
+<span class="n">Infer</span><span class="o">.</span><span class="n">PlotCorrelations</span><span class="p">(</span><span class="mi">10000</span><span class="p">,</span><span class="n">n_chains</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="n">p</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">gp</span><span class="o">.</span><span class="n">ep</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>which prints out a summary of the MCMC chains, and makes a plot of the correlations:</p>
+<div class="highlight-python"><div class="highlight"><pre>MCMC Marginalised distributions:
+ par = mean gauss_err [med +err -err]: GR
+ p[0] = -0.0000473 +- 0.0000949 [-0.0000499 +0.0000862 -0.0000832]: GR = 1.0023
+ p[1] = 2.5000000 +- 0.0000000 [2.5000000 +0.0000000 -0.0000000]: GR = -1.0000
+ p[2] = 11.0831646 +- 0.1990225 [11.0853944 +0.1956429 -0.2015135]: GR = 1.0010
+ p[3] = 0.0998971 +- 0.0009834 [0.0998172 +0.0010594 -0.0008764]: GR = 1.0010
+ p[4] = 0.5957373 +- 0.0196280 [0.5962324 +0.0188783 -0.0199335]: GR = 1.0005
+ p[5] = 0.2000000 +- 0.0000000 [0.2000000 +0.0000000 -0.0000000]: GR = -1.0000
+ p[6] = 0.3000000 +- 0.0000000 [0.3000000 +0.0000000 -0.0000000]: GR = -1.0000
+ p[7] = 0.9999438 +- 0.0002570 [0.9999483 +0.0002032 -0.0002256]: GR = 1.0000
+ p[8] = 0.0000000 +- 0.0000000 [0.0000000 +0.0000000 -0.0000000]: GR = -1.0000
+ p[9] = 0.0004272 +- 0.0002181 [0.0003718 +0.0002609 -0.0001358]: GR = 1.0020
+ p[10] = 0.0280761 +- 0.0069383 [0.0279881 +0.0070341 -0.0068133]: GR = 1.0007
+ p[11] = 0.0002982 +- 0.0000166 [0.0002980 +0.0000158 -0.0000165]: GR = 1.0016
+Gaussian Evidence approx:
+ log ML = 1334.14509614
+ log E = 1284.63138514
+ log E (BIC) = 1334.14509614 - 8/2.*np.log(N)
+ log E (AIC) = 1326.14509614 (D = 8, no n corr used!)
+</pre></div>
+</div>
+<img alt="_images/Correlations.png" src="_images/Correlations.png" />
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">GeePea</a></h1>
+
+
+
+
+
+
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="light_curve_eg.html"
+                        title="previous chapter">Fitting a transit light curve</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="normal_kernels.html"
+                        title="next chapter">Built-in &#8216;normal&#8217; kernels</a></p><h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="introduction.html#installation">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="gps.html">GPs in a nutshell</a></li>
+<li class="toctree-l1"><a class="reference internal" href="getting_started.html">Getting started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mean_functions.html">Using Mean Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="kernel_selection.html">Defining kernels</a></li>
+<li class="toctree-l1"><a class="reference internal" href="regression.html">Regression using GPs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="light_curve_eg.html">Fitting a transit light curve</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">Inference of hyperparameters</a></li>
+<li class="toctree-l1"><a class="reference internal" href="normal_kernels.html">Built-in &#8216;normal&#8217; kernels</a></li>
+<li class="toctree-l1"><a class="reference internal" href="toeplitz_kernels.html">Built-in Toeplitz kernels</a></li>
+</ul>
+
+
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2015, Neale Gibson.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.3</a>
+      
+      |
+      <a href="_sources/inference.txt"
+          rel="nofollow">Page source</a></li>
+    </div>
+
+    
+
+    
+  </body>
+</html>

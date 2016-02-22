@@ -1,0 +1,201 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Regression using GPs &mdash; GeePea 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="GeePea 1.0 documentation" href="index.html" />
+    <link rel="next" title="Fitting a transit light curve" href="light_curve_eg.html" />
+    <link rel="prev" title="Defining kernels" href="kernel_selection.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="light_curve_eg.html" title="Fitting a transit light curve"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="kernel_selection.html" title="Defining kernels"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="regression-using-gps">
+<h1>Regression using GPs<a class="headerlink" href="#regression-using-gps" title="Permalink to this headline">¶</a></h1>
+<p>So far the examples have only considered the input space specified by the data <img class="math" src="_images/math/e706fc3edb84f5678541057bffb799df2b0df938.png" alt="D"/>.
+The GP class methods <code class="xref py py-func docutils literal"><span class="pre">GeePea.GP.predict()</span></code> and <code class="xref py py-func docutils literal"><span class="pre">GeePea.GP.predictGP()</span></code>
+return the predictive distributions of the GP:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">y_pred</span><span class="p">,</span> <span class="n">y_pred_err</span> <span class="o">=</span> <span class="n">gp</span><span class="o">.</span><span class="n">predict</span><span class="p">()</span> <span class="c"># mean and kernel distribution</span>
+<span class="n">y_pred</span><span class="p">,</span> <span class="n">y_pred_err</span> <span class="o">=</span> <span class="n">gp</span><span class="o">.</span><span class="n">predictGP</span><span class="p">()</span> <span class="c"># assumes zero mean GP</span>
+</pre></div>
+</div>
+<p>There are also additional methods <code class="xref py py-func docutils literal"><span class="pre">GeePea.GP.getRandomVector()</span></code> and
+<code class="xref py py-func docutils literal"><span class="pre">GeePea.GP.getRandomVectorFromPrior()</span></code> to generate random draws from the posterior or
+prior:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">yr</span> <span class="o">=</span> <span class="n">gp</span><span class="o">.</span><span class="n">getRandomVector</span><span class="p">()</span> <span class="c"># get random vector from the posterior</span>
+<span class="n">yr</span> <span class="o">=</span> <span class="n">gp</span><span class="o">.</span><span class="n">getRandomVectorFromPrior</span><span class="p">()</span> <span class="c"># get random vector from the prior</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">These functions only return the predictive distributions for a single point estimate of the
+mean function parameters and kernel hyperparameters. Strictly speaking, this should take into
+account the posterior distribution of these parameters, but this is not easy to compute when
+using generic mean functions. This is generally fine for visualisation purposes, but a more
+rigorous treatment is necessary if using y_pred_err for further studies.</p>
+</div>
+<p>Note that these are called by <code class="xref py py-func docutils literal"><span class="pre">GeePea.GP.plot()</span></code> to obtain the model mean and predictive
+distribution.</p>
+<p>We&#8217;ll start with a simple example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">x</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mf">1.50</span><span class="p">,</span><span class="o">-</span><span class="mf">1.0</span><span class="p">,</span><span class="o">-</span><span class="mf">0.75</span><span class="p">,</span><span class="o">-</span><span class="mf">0.4</span><span class="p">,</span><span class="o">-</span><span class="mf">0.25</span><span class="p">,</span><span class="mf">0.00</span><span class="p">]</span> <span class="c">#x data</span>
+<span class="n">y</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mf">1.6</span><span class="p">,</span><span class="o">-</span><span class="mf">1.1</span><span class="p">,</span><span class="o">-</span><span class="mf">0.5</span><span class="p">,</span><span class="mf">0.25</span><span class="p">,</span><span class="mf">0.5</span><span class="p">,</span><span class="mf">0.8</span><span class="p">]</span> <span class="c">#y data</span>
+
+<span class="n">hp</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.</span><span class="p">,</span><span class="mf">1.</span><span class="p">,</span><span class="mf">0.3</span><span class="p">]</span> <span class="c">#hyperparameters</span>
+<span class="n">fp</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span> <span class="c">#fix the noise parameter</span>
+
+<span class="c">#define the GP</span>
+<span class="n">gp</span> <span class="o">=</span> <span class="n">GeePea</span><span class="o">.</span><span class="n">GP</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">p</span><span class="o">=</span><span class="n">hp</span><span class="p">,</span><span class="n">fp</span><span class="o">=</span><span class="n">fp</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Then we can optimise and plot the GP:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">gp</span><span class="o">.</span><span class="n">optimise</span><span class="p">()</span>
+<span class="n">gp</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>(<a class="reference external" href=".//regression-1.py">Source code</a>, <a class="reference external" href=".//regression-1.png">png</a>, <a class="reference external" href=".//regression-1.hires.png">hires.png</a>, <a class="reference external" href=".//regression-1.pdf">pdf</a>)</p>
+<div class="figure">
+<img alt="_images/regression-1.png" src="_images/regression-1.png" />
+</div>
+<p>The predictive distribution is only returned for the 6 input data points, and therefore doesn&#8217;t
+look smooth as it should. We also might want to see how a model behaves further from the inputs.
+In order to do this, we can provide predictive inputs to the GP class:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">x_p</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">200</span><span class="p">)</span> <span class="c">#predictive x inputs</span>
+
+<span class="n">gp</span> <span class="o">=</span> <span class="n">GeePea</span><span class="o">.</span><span class="n">GP</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">p</span><span class="o">=</span><span class="n">hp</span><span class="p">,</span><span class="n">fp</span><span class="o">=</span><span class="n">fp</span><span class="p">,</span><span class="n">x_pred</span><span class="o">=</span><span class="n">x_p</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>or we can update a GP class (see note below):</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">gp</span><span class="o">.</span><span class="n">set_pars</span><span class="p">(</span><span class="n">x_pred</span><span class="o">=</span><span class="n">x_p</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Now when we make a prediction for our GP, the distribution will be plotted for x_p, and not x. We
+can also generate some random draws from the GP, e.g.:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span> <span class="n">pylab</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">gp</span><span class="o">.</span><span class="n">xmf_pred</span><span class="p">,</span> <span class="n">gp</span><span class="o">.</span><span class="n">getRandomVector</span><span class="p">())</span>
+</pre></div>
+</div>
+<p>(<a class="reference external" href=".//regression-2.py">Source code</a>, <a class="reference external" href=".//regression-2.png">png</a>, <a class="reference external" href=".//regression-2.hires.png">hires.png</a>, <a class="reference external" href=".//regression-2.pdf">pdf</a>)</p>
+<div class="figure">
+<img alt="_images/regression-2.png" src="_images/regression-2.png" />
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">When using a mean function, the mean function arguments and predictive arguments can be set
+using xmf and xmf_pred if they are different to the kernel inputs (x and x_pred).
+By default, xmf and xmf_pred are set to x and x_pred respectively, and x_pred is set to x
+if it is also not defined. These can all be updated using GP.set_pars, but if redefining
+x_pred and xmf_pred, these should be done at the same time, otherwise they can be overwritten.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">GeePea</a></h1>
+
+
+
+
+
+
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="kernel_selection.html"
+                        title="previous chapter">Defining kernels</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="light_curve_eg.html"
+                        title="next chapter">Fitting a transit light curve</a></p><h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="introduction.html#installation">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="gps.html">GPs in a nutshell</a></li>
+<li class="toctree-l1"><a class="reference internal" href="getting_started.html">Getting started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mean_functions.html">Using Mean Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="kernel_selection.html">Defining kernels</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">Regression using GPs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="light_curve_eg.html">Fitting a transit light curve</a></li>
+<li class="toctree-l1"><a class="reference internal" href="inference.html">Inference of hyperparameters</a></li>
+<li class="toctree-l1"><a class="reference internal" href="normal_kernels.html">Built-in &#8216;normal&#8217; kernels</a></li>
+<li class="toctree-l1"><a class="reference internal" href="toeplitz_kernels.html">Built-in Toeplitz kernels</a></li>
+</ul>
+
+
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2015, Neale Gibson.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.3</a>
+      
+      |
+      <a href="_sources/regression.txt"
+          rel="nofollow">Page source</a></li>
+    </div>
+
+    
+
+    
+  </body>
+</html>

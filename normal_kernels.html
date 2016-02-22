@@ -1,0 +1,394 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Built-in ‘normal’ kernels &mdash; GeePea 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="GeePea 1.0 documentation" href="index.html" />
+    <link rel="next" title="Built-in Toeplitz kernels" href="toeplitz_kernels.html" />
+    <link rel="prev" title="Inference of hyperparameters" href="inference.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="toeplitz_kernels.html" title="Built-in Toeplitz kernels"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="inference.html" title="Inference of hyperparameters"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="built-in-normal-kernels">
+<span id="kernels"></span><h1>Built-in &#8216;normal&#8217; kernels<a class="headerlink" href="#built-in-normal-kernels" title="Permalink to this headline">¶</a></h1>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Not all kernels are fully tested - please check they return the expected covariance matrix
+using your inputs and hyperparameters before trusting them. If in doubt define your own!</p>
+</div>
+<span class="target" id="geepee-sqexponential"></span><dl class="function">
+<dt id="GeePea.SqExponential">
+<code class="descclassname">GeePea.</code><code class="descname">SqExponential</code><span class="sig-paren">(</span><em>X</em>, <em>Y</em>, <em>theta</em>, <em>white_noise=False</em><span class="sig-paren">)</span><a class="headerlink" href="#GeePea.SqExponential" title="Permalink to this definition">¶</a></dt>
+<dd><p>Squared exponential kernel function (with length scale for each K inputs in X/Y matrices).</p>
+<div class="math">
+<p><img src="_images/math/9d7195c4e11334ea1598048fddad0777d5b43198.png" alt="\Bsig_{ij} = k(\bx_i,\bx_j,\th) =
+\xi^2 exp\left( - \sum_{k=1}^K \frac{(x_{ik} - x_{jk})^2}{2l_k^2} ) \right) + \delta_{ij}\sigma^2,"/></p>
+</div><p>where <img class="math" src="_images/math/4217150352d4157bd0067963257bc10a62f973ee.png" alt="\th = \{\xi,l_1\dots l_k,\sigma\}"/>, <img class="math" src="_images/math/95d6ca84c6948c2e962549e8cb04f256e983a1f1.png" alt="\X = \{\bx_1,\dots,\bx_n \}^T"/>,
+and <img class="math" src="_images/math/4fa4042793482ccb4583cc8db37fb69e37fead38.png" alt="\Y = \{\by_1,\dots,\by_{n^\prime}\}^T"/>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>X</strong> : N x K matrix of inputs</p>
+<p><strong>Y</strong> : N&#8217; x K matrix of inputs</p>
+<p><strong>theta</strong> : array of K+2 kernel function parameters</p>
+<p><strong>white_noise</strong> : boolean, add white noise to diagonal if True</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>K</strong> : N x N&#8217; covariance matrix</p>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<dl class="last docutils">
+<dt><code class="xref py py-obj docutils literal"><span class="pre">SqExponentialARD</span></code></dt>
+<dd>Squared exponential kernel using inverse length scales</dd>
+</dl>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="GeePea.SqExponentialARD">
+<code class="descclassname">GeePea.</code><code class="descname">SqExponentialARD</code><span class="sig-paren">(</span><em>X</em>, <em>Y</em>, <em>theta</em>, <em>white_noise=False</em><span class="sig-paren">)</span><a class="headerlink" href="#GeePea.SqExponentialARD" title="Permalink to this definition">¶</a></dt>
+<dd><p>Squared exponential function using inverse length scales for each input dimension. ARD refers to
+<em>Automatic Relevance Determination</em>. This is a useful parameterisation for applying shrinkage
+to the inverse length scales, ie if <img class="math" src="_images/math/5df116675871551646799ca63d995005a7ddb077.png" alt="\eta_k\lim 0"/> then that input is not relevant to the
+inference. This kernel was used in Gibson et al. (2012) to account for multiple kernel inputs
+using NICMOS data.</p>
+<div class="math">
+<p><img src="_images/math/4a131aff7ee40ba18bb5a8a79957347d0ecda7c9.png" alt="\Bsig_{ij} = k(\bx_i,\bx_j,\th) =
+\xi^2 exp\left( - \sum_{k=1}^K \eta_k (x_{ik} - x_{jk})^2 \right) + \delta_{ij}\sigma^2,"/></p>
+</div><p>where <img class="math" src="_images/math/cc473827b8e7b89f5207dd3bacb8ec248bf9d2e6.png" alt="\th = \{\xi,\eta_1\dots\eta_k,\sigma\}"/>, <img class="math" src="_images/math/95d6ca84c6948c2e962549e8cb04f256e983a1f1.png" alt="\X = \{\bx_1,\dots,\bx_n \}^T"/>,
+and <img class="math" src="_images/math/4fa4042793482ccb4583cc8db37fb69e37fead38.png" alt="\Y = \{\by_1,\dots,\by_{n^\prime}\}^T"/>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>X</strong> : N x K matrix of inputs</p>
+<p><strong>Y</strong> : N&#8217; x K matrix of inputs</p>
+<p><strong>theta</strong> : array of K+2 kernel function parameters</p>
+<p><strong>white_noise</strong> : boolean, add white noise to diagonal if True</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>K</strong> : N x N&#8217; covariance matrix</p>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<dl class="last docutils">
+<dt><code class="xref py py-obj docutils literal"><span class="pre">SqExponential</span></code></dt>
+<dd>Squared exponential kernel using standard length scales</dd>
+</dl>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="GeePea.SqExponentialRad">
+<code class="descclassname">GeePea.</code><code class="descname">SqExponentialRad</code><span class="sig-paren">(</span><em>X</em>, <em>Y</em>, <em>theta</em>, <em>white_noise=False</em><span class="sig-paren">)</span><a class="headerlink" href="#GeePea.SqExponentialRad" title="Permalink to this definition">¶</a></dt>
+<dd><p>Radial squared exponential kernel function, ie. using single length scale for any no of inputs K.</p>
+<div class="math">
+<p><img src="_images/math/90f8f85a567c36dca6fa59ad517b4c1e491b9d87.png" alt="\Bsig_{ij} = k(\bx_i,\bx_j,\th) =
+\xi^2 exp\left( - \frac{1}{2l^2} (x_{ik} - x_{jk})^2 \right) + \delta_{ij}\sigma^2,"/></p>
+</div><p>where <img class="math" src="_images/math/52102800e3d14da2f25ad44175c80d23bee1a30e.png" alt="\th = \{\xi,l,\sigma\}"/>, <img class="math" src="_images/math/95d6ca84c6948c2e962549e8cb04f256e983a1f1.png" alt="\X = \{\bx_1,\dots,\bx_n \}^T"/>,
+and <img class="math" src="_images/math/4fa4042793482ccb4583cc8db37fb69e37fead38.png" alt="\Y = \{\by_1,\dots,\by_{n^\prime}\}^T"/>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>X</strong> : N x K matrix of inputs</p>
+<p><strong>Y</strong> : N&#8217; x K matrix of inputs</p>
+<p><strong>theta</strong> : array of 3 kernel function parameters</p>
+<p><strong>white_noise</strong> : boolean, add white noise to diagonal if True</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>K</strong> : N x N&#8217; covariance matrix</p>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<dl class="last docutils">
+<dt><code class="xref py py-obj docutils literal"><span class="pre">SqExponential</span></code></dt>
+<dd>Squared exponential kernel using standard length scales for all K inputs</dd>
+<dt><code class="xref py py-obj docutils literal"><span class="pre">SqExponentialARD</span></code></dt>
+<dd>Squared exponential kernel using inverse length scales for all K inputs</dd>
+</dl>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="GeePea.SqExponentialSum">
+<code class="descclassname">GeePea.</code><code class="descname">SqExponentialSum</code><span class="sig-paren">(</span><em>X</em>, <em>Y</em>, <em>theta</em>, <em>white_noise=False</em><span class="sig-paren">)</span><a class="headerlink" href="#GeePea.SqExponentialSum" title="Permalink to this definition">¶</a></dt>
+<dd><p>Squared exponential function using independent basis components, ie the GP is the sum of
+independent stochastic components. Individual height scale and length scale for each of K inputs.</p>
+<div class="math">
+<p><img src="_images/math/0ec84f6dfe2d944ca37f000a3204a4cd3120bd49.png" alt="\Bsig_{ij} = k(\bx_i,\bx_j,\th) =
+\sum_{k=1}^K \xi_i^2 exp\left( - \eta_k (x_{ik} - x_{jk})^2 \right) + \delta_{ij}\sigma^2,"/></p>
+</div><p>where <img class="math" src="_images/math/e6345dfacfc6d696495fb85436e219817c8bf1d8.png" alt="\th = \{\xi_1,\eta_1,\dots,\xi_k,\eta_k,\sigma\}"/>,
+<img class="math" src="_images/math/95d6ca84c6948c2e962549e8cb04f256e983a1f1.png" alt="\X = \{\bx_1,\dots,\bx_n \}^T"/>,
+and <img class="math" src="_images/math/4fa4042793482ccb4583cc8db37fb69e37fead38.png" alt="\Y = \{\by_1,\dots,\by_{n^\prime}\}^T"/>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>X</strong> : N x K matrix of inputs</p>
+<p><strong>Y</strong> : N&#8217; x K matrix of inputs</p>
+<p><strong>theta</strong> : array of 2*K+1 kernel function parameters</p>
+<p><strong>white_noise</strong> : boolean, add white noise to diagonal if True</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>K</strong> : N x N&#8217; covariance matrix</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="GeePea.Matern32">
+<code class="descclassname">GeePea.</code><code class="descname">Matern32</code><span class="sig-paren">(</span><em>X</em>, <em>Y</em>, <em>theta</em>, <em>white_noise=False</em><span class="sig-paren">)</span><a class="headerlink" href="#GeePea.Matern32" title="Permalink to this definition">¶</a></dt>
+<dd><p>Matern 3/2 kernel function with length scale parameters for each input dimension.</p>
+<div class="math">
+<p><img src="_images/math/50bbfa658ce2f947dbb399b446ccd12c9c2fee1f.png" alt="\Bsig_{ij} = k(\bx_i,\bx_j,\th) =
+\xi_i^2 \left(1+\sqrt(3)D\right) exp\left( -\sqrt(3)D \right) + \delta_{ij}\sigma^2,"/></p>
+</div><p>where <img class="math" src="_images/math/90023ec41993d19bbbab7510d24a9fdac8b2b033.png" alt="D = \sqrt{\sum_{k=1}^K \frac{1}{l_k^2} (x_{ik} - x_{jk})^2}"/>,
+<img class="math" src="_images/math/44775ea40f05a71e5311927171f9236f22482ae8.png" alt="\th = \{\xi_1,l_1,\dots,l_k,\sigma\}"/>,
+<img class="math" src="_images/math/95d6ca84c6948c2e962549e8cb04f256e983a1f1.png" alt="\X = \{\bx_1,\dots,\bx_n \}^T"/>,
+and <img class="math" src="_images/math/4fa4042793482ccb4583cc8db37fb69e37fead38.png" alt="\Y = \{\by_1,\dots,\by_{n^\prime}\}^T"/>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>X</strong> : N x K matrix of inputs</p>
+<p><strong>Y</strong> : N&#8217; x K matrix of inputs</p>
+<p><strong>theta</strong> : array of K+2 kernel function parameters</p>
+<p><strong>white_noise</strong> : boolean, add white noise to diagonal if True</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>K</strong> : N x N&#8217; covariance matrix</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="GeePea.Matern52">
+<code class="descclassname">GeePea.</code><code class="descname">Matern52</code><span class="sig-paren">(</span><em>X</em>, <em>Y</em>, <em>theta</em>, <em>white_noise=False</em><span class="sig-paren">)</span><a class="headerlink" href="#GeePea.Matern52" title="Permalink to this definition">¶</a></dt>
+<dd><p>Matern 5/2 kernel function with length scale parameters for each input dimension.</p>
+<div class="math">
+<p><img src="_images/math/32f8d2ec3149285fddc77fe5edc555692c42a192.png" alt="\Bsig_{ij} = k(\bx_i,\bx_j,\th) =
+\xi_i^2 \left(1+\sqrt(5)D + \frac{5}{3}D^2\right) exp\left( -\sqrt(5)D \right) + \delta_{ij}\sigma^2,"/></p>
+</div><p>where <img class="math" src="_images/math/90023ec41993d19bbbab7510d24a9fdac8b2b033.png" alt="D = \sqrt{\sum_{k=1}^K \frac{1}{l_k^2} (x_{ik} - x_{jk})^2}"/>,
+<img class="math" src="_images/math/44775ea40f05a71e5311927171f9236f22482ae8.png" alt="\th = \{\xi_1,l_1,\dots,l_k,\sigma\}"/>,
+<img class="math" src="_images/math/95d6ca84c6948c2e962549e8cb04f256e983a1f1.png" alt="\X = \{\bx_1,\dots,\bx_n \}^T"/>,
+and <img class="math" src="_images/math/4fa4042793482ccb4583cc8db37fb69e37fead38.png" alt="\Y = \{\by_1,\dots,\by_{n^\prime}\}^T"/>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>X</strong> : N x K matrix of inputs</p>
+<p><strong>Y</strong> : N&#8217; x K matrix of inputs</p>
+<p><strong>theta</strong> : array of K+2 kernel function parameters</p>
+<p><strong>white_noise</strong> : boolean, add white noise to diagonal if True</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>K</strong> : N x N&#8217; covariance matrix</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="GeePea.RationalQuadRad">
+<code class="descclassname">GeePea.</code><code class="descname">RationalQuadRad</code><span class="sig-paren">(</span><em>X</em>, <em>Y</em>, <em>theta</em>, <em>white_noise=False</em><span class="sig-paren">)</span><a class="headerlink" href="#GeePea.RationalQuadRad" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rational quadratic kernel (radial) - not fully tested</p>
+<div class="math">
+<p><img src="_images/math/c94eb4fffa2c608d7e067fad49208560e5c53518.png" alt="\Bsig_{ij} = k(\bx_i,\bx_j,\th) =
+\xi_i^2 \left(1+\frac{D^2}{2\alpha l^2}\right)^{-\alpha} + \delta_{ij}\sigma^2,"/></p>
+</div><p>where <img class="math" src="_images/math/009a9e39d48168ec2af09a32ce392935913678f7.png" alt="D = \sqrt{\sum_{k=1}^K (x_{ik} - x_{jk})^2}"/>,
+<img class="math" src="_images/math/4f09580e8a6e79190d7ae19d6973b5623deabee9.png" alt="\th = \{\xi,\alpha,l,\sigma\}"/>,
+<img class="math" src="_images/math/95d6ca84c6948c2e962549e8cb04f256e983a1f1.png" alt="\X = \{\bx_1,\dots,\bx_n \}^T"/>,
+and <img class="math" src="_images/math/4fa4042793482ccb4583cc8db37fb69e37fead38.png" alt="\Y = \{\by_1,\dots,\by_{n^\prime}\}^T"/>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>X</strong> : N x K matrix of inputs</p>
+<p><strong>Y</strong> : N&#8217; x K matrix of inputs</p>
+<p><strong>theta</strong> : array of K+2 kernel function parameters</p>
+<p><strong>white_noise</strong> : boolean, add white noise to diagonal if True</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>K</strong> : N x N&#8217; covariance matrix</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="GeePea.EuclideanDist">
+<code class="descclassname">GeePea.</code><code class="descname">EuclideanDist</code><span class="sig-paren">(</span><em>X1</em>, <em>X2</em>, <em>v=None</em><span class="sig-paren">)</span><a class="headerlink" href="#GeePea.EuclideanDist" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the distance matrix for 2 data matrices</p>
+<div class="math">
+<p><img src="_images/math/533cb4e59155bbf837bdfab7f8491277d56f73f8.png" alt="D = \sqrt{\sum_{k=1}^K v_i^2 (x_i - x^\prime_i)^2}"/></p>
+</div><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>X1</strong> : N x K matrix of inputs</p>
+<p><strong>X2</strong> : N&#8217; x K matrix of inputs</p>
+<p><strong>v</strong> : array of weights for each input dimension</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>D</strong> : N x N&#8217; matrix of distance measure</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="GeePea.EuclideanDist2">
+<code class="descclassname">GeePea.</code><code class="descname">EuclideanDist2</code><span class="sig-paren">(</span><em>X1</em>, <em>X2</em>, <em>v=None</em><span class="sig-paren">)</span><a class="headerlink" href="#GeePea.EuclideanDist2" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the distance matrix squared for 2 data matrices</p>
+<div class="math">
+<p><img src="_images/math/40c9fb7d236fefb5d733fef7704767e628e70fe8.png" alt="D = \sum_{k=1}^K v_i^2 (x_i - x^\prime_i)^2"/></p>
+</div><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>X1</strong> : N x K matrix of inputs</p>
+<p><strong>X2</strong> : N&#8217; x K matrix of inputs</p>
+<p><strong>v</strong> : array of weights for each input dimension</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>D</strong> : N x N&#8217; matrix of distance measure</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">GeePea</a></h1>
+
+
+
+
+
+
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="inference.html"
+                        title="previous chapter">Inference of hyperparameters</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="toeplitz_kernels.html"
+                        title="next chapter">Built-in Toeplitz kernels</a></p><h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="introduction.html#installation">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="gps.html">GPs in a nutshell</a></li>
+<li class="toctree-l1"><a class="reference internal" href="getting_started.html">Getting started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mean_functions.html">Using Mean Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="kernel_selection.html">Defining kernels</a></li>
+<li class="toctree-l1"><a class="reference internal" href="regression.html">Regression using GPs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="light_curve_eg.html">Fitting a transit light curve</a></li>
+<li class="toctree-l1"><a class="reference internal" href="inference.html">Inference of hyperparameters</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">Built-in &#8216;normal&#8217; kernels</a></li>
+<li class="toctree-l1"><a class="reference internal" href="toeplitz_kernels.html">Built-in Toeplitz kernels</a></li>
+</ul>
+
+
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2015, Neale Gibson.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.3</a>
+      
+      |
+      <a href="_sources/normal_kernels.txt"
+          rel="nofollow">Page source</a></li>
+    </div>
+
+    
+
+    
+  </body>
+</html>

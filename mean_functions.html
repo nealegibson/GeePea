@@ -1,0 +1,220 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Using Mean Functions &mdash; GeePea 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="GeePea 1.0 documentation" href="index.html" />
+    <link rel="next" title="Defining kernels" href="kernel_selection.html" />
+    <link rel="prev" title="Getting started" href="getting_started.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="kernel_selection.html" title="Defining kernels"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="getting_started.html" title="Getting started"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="using-mean-functions">
+<h1>Using Mean Functions<a class="headerlink" href="#using-mean-functions" title="Permalink to this headline">¶</a></h1>
+<p>Mean functions (i.e. a deterministic component) can easily be added to the GP class.
+They <em>must</em> be callable functions using the following format:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">mean_function</span><span class="p">(</span><span class="n">p</span><span class="p">,</span><span class="n">args</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>where p is an array of parameters of the mean function, and args are additional arguments.</p>
+<p>For example, we could define a simple mean function that is a linear function of two
+parameters as follows:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">my_mean_func</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">p</span><span class="p">,</span><span class="n">x</span><span class="p">:</span> <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">x</span>
+</pre></div>
+</div>
+<p>or alternatively:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">my_mean_func</span><span class="p">(</span><span class="n">p</span><span class="p">,</span><span class="n">x</span><span class="p">):</span>
+  <span class="n">y</span> <span class="o">=</span> <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">x</span>
+  <span class="k">return</span> <span class="n">y</span>
+</pre></div>
+</div>
+<p>Now we can make some simple data using our mean function:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">50</span><span class="p">)</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">my_mean_func</span><span class="p">([</span><span class="mf">1.</span><span class="p">,</span><span class="mf">3.</span><span class="p">],</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mf">0.1</span><span class="p">,</span><span class="n">x</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Here, we expect the mean function to account for the linear trend, and the GP to account
+for deviations from this mean function (plus white noise). We also must define the
+(initial) parameters of our GP:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">mfp</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.8</span><span class="p">,</span><span class="mf">2.</span><span class="p">]</span> <span class="c"># mean function parameters</span>
+<span class="n">hp</span> <span class="o">=</span> <span class="p">[</span><span class="mf">1.</span><span class="p">,</span><span class="mf">1.</span><span class="p">,</span><span class="mf">0.1</span><span class="p">]</span> <span class="c"># kernel hyperparameters (sq exponential takes 3 parameters for 1D input)</span>
+</pre></div>
+</div>
+<p>These parameters are always passed as a single list or array, with mean function
+parameters followed by kernel parameters. For built in kernels (or any with n_par
+attribute), the GP class will know how to divide the parameters.</p>
+<p>And now we are ready to define our GP:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">gp</span> <span class="o">=</span> <span class="n">GeePea</span><span class="o">.</span><span class="n">GP</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">p</span><span class="o">=</span><span class="n">mfp</span><span class="o">+</span><span class="n">hp</span><span class="p">,</span><span class="n">mf</span><span class="o">=</span><span class="n">my_mean_func</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">By default, the GP will set the mean function arguments to the same as the kernel
+function arguments x, or in the case of multidimensional x, to the first vector in x.
+If the mean function arguments are different to the kernel arguments, then this must
+be given to the GP class via the xmf argument</p>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">gp</span> <span class="o">=</span> <span class="n">GPea</span><span class="o">.</span><span class="n">GP</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">p</span><span class="o">=</span><span class="n">mfp</span><span class="o">+</span><span class="n">hp</span><span class="p">,</span><span class="n">mf</span><span class="o">=</span><span class="n">my_mean_func</span><span class="p">,</span><span class="n">xmf</span><span class="o">=</span><span class="n">mean_func_args</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>If is often useful to look at the current state of the GP using the describe method,
+which prints out the functions/parameters attached to the GP:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">gp</span><span class="o">.</span><span class="n">describe</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>We can also plot the current state:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">gp</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>(<a class="reference external" href=".//mean_functions-1.py">Source code</a>, <a class="reference external" href=".//mean_functions-1.png">png</a>, <a class="reference external" href=".//mean_functions-1.hires.png">hires.png</a>, <a class="reference external" href=".//mean_functions-1.pdf">pdf</a>)</p>
+<div class="figure">
+<img alt="_images/mean_functions-1.png" src="_images/mean_functions-1.png" />
+</div>
+<p>The red dotted line plots the mean function here. Obviously, the guess parameters do
+not provide a very good fit for our data. Therefore we need to optimise the mean function
+parameters and hyperparameters:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">gp</span><span class="o">.</span><span class="n">optimise</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>This now provides a much better fit to our data. Note that in some cases we only want to
+optimise a subset of our parameters, and hold others fixed. In this case, we can define a fixed
+parameter array. This is a series of 1s and 0s that correspond to the mean function plus
+kernel function parameters. For example, using the same parameters as before, if we want to keep
+the white noise hyperparameter fixed we would also define a fixed parameter array and pass it to
+the GP class:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">mfp</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.8</span><span class="p">,</span><span class="mf">2.</span><span class="p">]</span> <span class="c"># mean function parameters</span>
+<span class="n">hp</span> <span class="o">=</span> <span class="p">[</span><span class="mf">1.</span><span class="p">,</span><span class="mf">1.</span><span class="p">,</span><span class="mf">0.1</span><span class="p">]</span> <span class="c"># kernel hyperparameters (sq exponential takes 3 parameters for 1D input)</span>
+<span class="n">fp</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span> <span class="c"># fixed parameter array - keep final hyperparamter fixed</span>
+<span class="c">#pass to the GP</span>
+<span class="n">gp</span> <span class="o">=</span> <span class="n">GeePea</span><span class="o">.</span><span class="n">GP</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">p</span><span class="o">=</span><span class="n">mfp</span><span class="o">+</span><span class="n">hp</span><span class="p">,</span><span class="n">mf</span><span class="o">=</span><span class="n">my_mean_func</span><span class="p">,</span><span class="n">fp</span><span class="o">=</span><span class="n">fp</span><span class="p">)</span>
+<span class="c">#or</span>
+<span class="n">gp</span><span class="o">.</span><span class="n">set_pars</span><span class="p">(</span><span class="n">fp</span><span class="o">=</span><span class="n">fp</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Now if we optimise the GP only the parameters where fp==0 are allowed to vary.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The optimiser uses a wrapper to the fmin functions in scipy.optimize. These tend to work well
+for small numbers of parameters, but for more complex likelihoods it needs a sensible starting
+guess. Normally full Bayesian inference should be used to get obtain the posterior distribution
+for the variable parameters.</p>
+</div>
+<p>(<a class="reference external" href=".//mean_functions-2.py">Source code</a>, <a class="reference external" href=".//mean_functions-2.png">png</a>, <a class="reference external" href=".//mean_functions-2.hires.png">hires.png</a>, <a class="reference external" href=".//mean_functions-2.pdf">pdf</a>)</p>
+<div class="figure">
+<img alt="_images/mean_functions-2.png" src="_images/mean_functions-2.png" />
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">GeePea</a></h1>
+
+
+
+
+
+
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="getting_started.html"
+                        title="previous chapter">Getting started</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="kernel_selection.html"
+                        title="next chapter">Defining kernels</a></p><h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="introduction.html#installation">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="gps.html">GPs in a nutshell</a></li>
+<li class="toctree-l1"><a class="reference internal" href="getting_started.html">Getting started</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">Using Mean Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="kernel_selection.html">Defining kernels</a></li>
+<li class="toctree-l1"><a class="reference internal" href="regression.html">Regression using GPs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="light_curve_eg.html">Fitting a transit light curve</a></li>
+<li class="toctree-l1"><a class="reference internal" href="inference.html">Inference of hyperparameters</a></li>
+<li class="toctree-l1"><a class="reference internal" href="normal_kernels.html">Built-in &#8216;normal&#8217; kernels</a></li>
+<li class="toctree-l1"><a class="reference internal" href="toeplitz_kernels.html">Built-in Toeplitz kernels</a></li>
+</ul>
+
+
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2015, Neale Gibson.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.3</a>
+      
+      |
+      <a href="_sources/mean_functions.txt"
+          rel="nofollow">Page source</a></li>
+    </div>
+
+    
+
+    
+  </body>
+</html>

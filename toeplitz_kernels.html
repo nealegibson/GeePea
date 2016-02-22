@@ -1,0 +1,194 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Built-in Toeplitz kernels &mdash; GeePea 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="GeePea 1.0 documentation" href="index.html" />
+    <link rel="prev" title="Built-in ‘normal’ kernels" href="normal_kernels.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="normal_kernels.html" title="Built-in ‘normal’ kernels"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="built-in-toeplitz-kernels">
+<span id="toekernels"></span><h1>Built-in Toeplitz kernels<a class="headerlink" href="#built-in-toeplitz-kernels" title="Permalink to this headline">¶</a></h1>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Not all kernels are fully tested - please check they return the expected covariance matrix
+using your inputs and hyperparameters before trusting them. If in doubt define your own!</p>
+</div>
+<dl class="function">
+<dt id="GeePea.ToeplitzSqExponential">
+<code class="descclassname">GeePea.</code><code class="descname">ToeplitzSqExponential</code><span class="sig-paren">(</span><em>X</em>, <em>Y</em>, <em>theta</em>, <em>white_noise=False</em><span class="sig-paren">)</span><a class="headerlink" href="#GeePea.ToeplitzSqExponential" title="Permalink to this definition">¶</a></dt>
+<dd><p>Toeplitz squared exponential function - only 1D input therefore 3 accepts 3 parameters. See
+GeePea.SqExponential for equivalent full kernel.</p>
+<div class="math">
+<p><img src="_images/math/4a131aff7ee40ba18bb5a8a79957347d0ecda7c9.png" alt="\Bsig_{ij} = k(\bx_i,\bx_j,\th) =
+\xi^2 exp\left( - \sum_{k=1}^K \eta_k (x_{ik} - x_{jk})^2 \right) + \delta_{ij}\sigma^2,"/></p>
+</div><p>where <img class="math" src="_images/math/52102800e3d14da2f25ad44175c80d23bee1a30e.png" alt="\th = \{\xi,l,\sigma\}"/>, <img class="math" src="_images/math/3e56450c1f2848392239fcf47903fd0565af7990.png" alt="\X = \{x_1,\dots,x_n \}^T"/>,
+and <img class="math" src="_images/math/b415d36d5a4c3ec1d101bafed00e3bd974455e5c.png" alt="\Y = \{y_1,\dots,y_{n^\prime}\}^T"/>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>X</strong> : N x 1 matrix of inputs</p>
+<p><strong>Y</strong> : N&#8217; x 1 matrix of inputs</p>
+<p><strong>theta</strong> : array of 3 kernel function parameters</p>
+<p><strong>white_noise</strong> : boolean, add white noise to diagonal if True</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>K</strong> : N x N&#8217; covariance matrix</p>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<dl class="last docutils">
+<dt><code class="xref py py-obj docutils literal"><span class="pre">SqExponential</span></code></dt>
+<dd>Squared exponential kernel using standard length scales</dd>
+</dl>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="GeePea.ToeplitzMatern32">
+<code class="descclassname">GeePea.</code><code class="descname">ToeplitzMatern32</code><span class="sig-paren">(</span><em>X</em>, <em>Y</em>, <em>theta</em>, <em>white_noise=False</em><span class="sig-paren">)</span><a class="headerlink" href="#GeePea.ToeplitzMatern32" title="Permalink to this definition">¶</a></dt>
+<dd><p>Toeplitz Matern 3/2 function - only 1D input therefore 3 accepts 3 parameters. See
+GeePea.Matern32 for equivalent full kernel.</p>
+<div class="math">
+<p><img src="_images/math/50bbfa658ce2f947dbb399b446ccd12c9c2fee1f.png" alt="\Bsig_{ij} = k(\bx_i,\bx_j,\th) =
+\xi_i^2 \left(1+\sqrt(3)D\right) exp\left( -\sqrt(3)D \right) + \delta_{ij}\sigma^2,"/></p>
+</div><p>where <img class="math" src="_images/math/3ae8aa63adfebc7782e89af3e67d5f978244da3c.png" alt="D = (x_{i} - x_{k}) / l"/>, <img class="math" src="_images/math/52102800e3d14da2f25ad44175c80d23bee1a30e.png" alt="\th = \{\xi,l,\sigma\}"/>,
+<img class="math" src="_images/math/3e56450c1f2848392239fcf47903fd0565af7990.png" alt="\X = \{x_1,\dots,x_n \}^T"/>, and <img class="math" src="_images/math/b415d36d5a4c3ec1d101bafed00e3bd974455e5c.png" alt="\Y = \{y_1,\dots,y_{n^\prime}\}^T"/>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>X</strong> : N x 1 matrix of inputs</p>
+<p><strong>Y</strong> : N&#8217; x 1 matrix of inputs</p>
+<p><strong>theta</strong> : array of 3 kernel function parameters</p>
+<p><strong>white_noise</strong> : boolean, add white noise to diagonal if True</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>K</strong> : N x N&#8217; covariance matrix</p>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<dl class="last docutils">
+<dt><code class="xref py py-obj docutils literal"><span class="pre">Matern32</span></code></dt>
+<dd>Full Matern 3/2 kernel</dd>
+</dl>
+</div>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">GeePea</a></h1>
+
+
+
+
+
+
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="normal_kernels.html"
+                        title="previous chapter">Built-in &#8216;normal&#8217; kernels</a></p><h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="introduction.html#installation">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="gps.html">GPs in a nutshell</a></li>
+<li class="toctree-l1"><a class="reference internal" href="getting_started.html">Getting started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mean_functions.html">Using Mean Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="kernel_selection.html">Defining kernels</a></li>
+<li class="toctree-l1"><a class="reference internal" href="regression.html">Regression using GPs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="light_curve_eg.html">Fitting a transit light curve</a></li>
+<li class="toctree-l1"><a class="reference internal" href="inference.html">Inference of hyperparameters</a></li>
+<li class="toctree-l1"><a class="reference internal" href="normal_kernels.html">Built-in &#8216;normal&#8217; kernels</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">Built-in Toeplitz kernels</a></li>
+</ul>
+
+
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2015, Neale Gibson.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.3</a>
+      
+      |
+      <a href="_sources/toeplitz_kernels.txt"
+          rel="nofollow">Page source</a></li>
+    </div>
+
+    
+
+    
+  </body>
+</html>

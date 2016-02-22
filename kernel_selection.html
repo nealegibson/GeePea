@@ -1,0 +1,192 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Defining kernels &mdash; GeePea 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="GeePea 1.0 documentation" href="index.html" />
+    <link rel="next" title="Regression using GPs" href="regression.html" />
+    <link rel="prev" title="Using Mean Functions" href="mean_functions.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="regression.html" title="Regression using GPs"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="mean_functions.html" title="Using Mean Functions"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="defining-kernels">
+<h1>Defining kernels<a class="headerlink" href="#defining-kernels" title="Permalink to this headline">¶</a></h1>
+<p>To select another kernel, this just needs to be passed to the GP class during
+initialisation:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">gp</span> <span class="o">=</span> <span class="n">GeePea</span><span class="o">.</span><span class="n">GP</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">p</span><span class="p">,</span><span class="n">kf</span><span class="o">=</span><span class="n">GeePea</span><span class="o">.</span><span class="n">Matern32</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>or alternatively added using the GP.set_pars method:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">gp</span><span class="o">.</span><span class="n">set_pars</span><span class="p">(</span><span class="n">kf</span><span class="o">=</span><span class="n">GeePea</span><span class="o">.</span><span class="n">Matern32</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This is important to do via the set_pars method as the number of parameters accepted by
+the kernel function and the kernel type is automatically set for built-in kernels. This
+would be ignored if the kernel function is set directly:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">gp</span><span class="o">.</span><span class="n">kf</span> <span class="o">=</span> <span class="n">some_kernel</span>
+</pre></div>
+</div>
+<p>For a list of built in kernel functions see <a class="reference internal" href="normal_kernels.html#kernels"><span>kernels</span></a> and <a class="reference internal" href="toeplitz_kernels.html#toekernels"><span>toeplitz kernels</span></a>.</p>
+<p>It is also very easy to design your own kernels:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">MySqExponential</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">Y</span><span class="p">,</span><span class="n">theta</span><span class="p">,</span><span class="n">white_noise</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+  <span class="c"># This is just a copy of GeePea.SqExponential</span>
+
+  <span class="c">#Calculate distance matrix with scaling - multiply each coord by sqrt(eta)</span>
+  <span class="n">D2</span> <span class="o">=</span> <span class="n">GeePea</span><span class="o">.</span><span class="n">EuclideanDist2</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">Y</span><span class="p">,</span><span class="n">v</span><span class="o">=</span><span class="mf">1.</span><span class="o">/</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">theta</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">])))</span><span class="c">#</span>
+
+  <span class="c">#Calculate covariance matrix</span>
+  <span class="n">K</span> <span class="o">=</span> <span class="n">theta</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span> <span class="o">-</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">D2</span> <span class="p">)</span>
+
+  <span class="c">#Add white noise</span>
+  <span class="k">if</span> <span class="n">white_noise</span> <span class="ow">is</span> <span class="bp">True</span><span class="p">:</span> <span class="n">K</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">identity</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">size</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">theta</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+
+  <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="n">K</span><span class="p">)</span>
+
+<span class="c"># optional - add some attributes</span>
+<span class="n">MySqExponential</span><span class="o">.</span><span class="n">n_par</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">D</span><span class="p">:</span> <span class="n">D</span><span class="o">+</span><span class="mi">2</span>
+<span class="n">MySqExponential</span><span class="o">.</span><span class="n">kernel_type</span> <span class="o">=</span> <span class="s">&quot;Full&quot;</span>
+</pre></div>
+</div>
+<p>Then the kernel can be added to the GP initialisation:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">gp</span> <span class="o">=</span> <span class="n">GeePea</span><span class="o">.</span><span class="n">GP</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">p</span><span class="p">,</span><span class="n">kf</span><span class="o">=</span><span class="n">MySqExponential</span><span class="p">)</span>
+<span class="go"># or later via:</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">gp</span> <span class="o">=</span> <span class="n">GeePea</span><span class="o">.</span><span class="n">GP</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">p</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">gp</span><span class="o">.</span><span class="n">set_pars</span><span class="p">(</span><span class="n">kf</span><span class="o">=</span><span class="n">MySqExponential</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>It is important that the function follows the same format, and accepts three input
+arguments X, Y and theta, plus one additional boolean argument, white_noise. X and Y are
+input matrices containing the arguments to the kernel, theta contains the parameters of
+the mean function, and if white_noise is True, then the white noise term is added along
+the diagonal of the covariance matrix. This format is required so that it can return
+arbitrary blocks of the covariance matrix for GP regression, however, usually it is called
+as:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">kf</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">X</span><span class="p">,</span><span class="n">white_noise</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>in order to calculate the full covariance matrix of the input data and calculate the
+likelihood.</p>
+<p>The attributes n_par and kernel_type are optional, and are used for the GP class to
+automatically set the number of parameters the kernel takes and the type of kernel. These
+can however be set directly via the GP class initialisation, via:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">gp</span> <span class="o">=</span> <span class="n">GeePea</span><span class="o">.</span><span class="n">GP</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">p</span><span class="p">,</span><span class="n">kf</span><span class="o">=</span><span class="n">GeePea</span><span class="o">.</span><span class="n">Matern32</span><span class="p">,</span><span class="n">n_hp</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span><span class="n">kernel_type</span><span class="o">=</span><span class="s">&#39;F&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The kernel_type is &#8216;Full&#8217; by default, so it only needs to be set if the kernel is reset
+from a different type, or if Toeplitz/White kernels are defined by the user without a
+kernel_type attribute.</p>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">GeePea</a></h1>
+
+
+
+
+
+
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="mean_functions.html"
+                        title="previous chapter">Using Mean Functions</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="regression.html"
+                        title="next chapter">Regression using GPs</a></p><h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="introduction.html#installation">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="gps.html">GPs in a nutshell</a></li>
+<li class="toctree-l1"><a class="reference internal" href="getting_started.html">Getting started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mean_functions.html">Using Mean Functions</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">Defining kernels</a></li>
+<li class="toctree-l1"><a class="reference internal" href="regression.html">Regression using GPs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="light_curve_eg.html">Fitting a transit light curve</a></li>
+<li class="toctree-l1"><a class="reference internal" href="inference.html">Inference of hyperparameters</a></li>
+<li class="toctree-l1"><a class="reference internal" href="normal_kernels.html">Built-in &#8216;normal&#8217; kernels</a></li>
+<li class="toctree-l1"><a class="reference internal" href="toeplitz_kernels.html">Built-in Toeplitz kernels</a></li>
+</ul>
+
+
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2015, Neale Gibson.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.3</a>
+      
+      |
+      <a href="_sources/kernel_selection.txt"
+          rel="nofollow">Page source</a></li>
+    </div>
+
+    
+
+    
+  </body>
+</html>

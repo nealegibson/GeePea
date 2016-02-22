@@ -1,0 +1,164 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Overview &mdash; GeePea 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="GeePea 1.0 documentation" href="index.html" />
+    <link rel="next" title="GPs in a nutshell" href="gps.html" />
+    <link rel="prev" title="Docs for GeePea module" href="index.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="gps.html" title="GPs in a nutshell"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Docs for GeePea module"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="overview">
+<span id="id1"></span><h1>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h1>
+<p>This module was originally developed to fit transit light curves using
+Gaussian Processes (GPs) in order to model the systematics as a stochastic process, as
+described in <a class="reference external" href="http://adsabs.harvard.edu/abs/2012MNRAS.419.2683G">Gibson et al. (2012)</a>, but it is also useful as a general tool for
+fitting datasets using GPs with arbitrary kernel and mean functions. It was originally
+part of my general Infer module, but new features have regularly been added, some of which are described
+in more recent papers, see e.g. Gibson et al. (<a class="reference external" href="http://adsabs.harvard.edu/abs/2013MNRAS.428.3680G">2013a</a>, <a class="reference external" href="http://adsabs.harvard.edu/abs/2013MNRAS.436.2974G">2013b</a>) and <a class="reference external" href="http://adsabs.harvard.edu/abs/2014MNRAS.445.3401G">Gibson (2014)</a>
+for details. Please consider citing these if you make use of this code.</p>
+<p>For an introduction to GPs please see these papers, or for a text book introduction see
+<a class="reference external" href="http://www.gaussianprocess.org/gpml/">Gaussian Processes for Machine Learning</a>. For a more generic introduction to Bayesian
+inference including an relatively easy intro to GPs I recommend <a class="reference external" href="http://www.springer.com/us/book/9780387310732">Pattern Recognition and
+Machine Learning</a>. I also found this <a class="reference external" href="http://www.robots.ox.ac.uk/~mebden/reports/GPtutorial.pdf">tutorial</a> by M. Ebden incredibly useful when
+learning GPs.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The standard solver uses cholesky decomposition (via scipy). I experimented with multiple methods
+(including C code, GPUs, other python implementations), and this was the
+fastest and most convenient solver I could find without using approximations (although
+GPUs are faster for large matrices). There is also a fast solver for Toplitz covaraince kernels
+(diagonal-constant matrix) using the Levenson-Trench-Zohar algorithm (C implementaion),
+and for convenience, a white noise kernel. The GP class will recognise the
+correct kernel-type for the built-in kernels. I might include additional solvers in the future,
+but these have proved sufficient for the light curve models I&#8217;ve explored so far.</p>
+</div>
+</div>
+<div class="section" id="installation">
+<h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
+<p>Download the module from github at <a class="reference external" href="https://github.com/nealegibson/GeePea">https://github.com/nealegibson/GeePea</a> or clone using git:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ git clone https://github.com/nealegibson/GeePea
+</pre></div>
+</div>
+<p>Then install as normal:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ cd GeePea
+$ python setup.py build
+$ python setup.py install [--prefix=/path_to_install_dir]
+</pre></div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">GeePea</a></h1>
+
+
+
+
+
+
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">Docs for GeePea module</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="gps.html"
+                        title="next chapter">GPs in a nutshell</a></p><h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#installation">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="gps.html">GPs in a nutshell</a></li>
+<li class="toctree-l1"><a class="reference internal" href="getting_started.html">Getting started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mean_functions.html">Using Mean Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="kernel_selection.html">Defining kernels</a></li>
+<li class="toctree-l1"><a class="reference internal" href="regression.html">Regression using GPs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="light_curve_eg.html">Fitting a transit light curve</a></li>
+<li class="toctree-l1"><a class="reference internal" href="inference.html">Inference of hyperparameters</a></li>
+<li class="toctree-l1"><a class="reference internal" href="normal_kernels.html">Built-in &#8216;normal&#8217; kernels</a></li>
+<li class="toctree-l1"><a class="reference internal" href="toeplitz_kernels.html">Built-in Toeplitz kernels</a></li>
+</ul>
+
+
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2015, Neale Gibson.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.3</a>
+      
+      |
+      <a href="_sources/introduction.txt"
+          rel="nofollow">Page source</a></li>
+    </div>
+
+    
+
+    
+  </body>
+</html>
