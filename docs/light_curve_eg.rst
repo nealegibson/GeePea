@@ -50,8 +50,8 @@ Now we can optimise and plot as before::
   predictive points do not have the same spacing as the inputs. If this isn't possible, or you
   need a finer grid for plotting/whatever, then you can switch to an equivalent full kernel after
   the optimisation/marginalisation.
-
-.. plot::
+  
+::
 
   import GeePea
   import numpy as np
@@ -77,3 +77,5 @@ Now we can optimise and plot as before::
   #and plot
   gp.plot()
   for i in range(3): pylab.plot(gp.xmf_pred, gp.getRandomVector())
+
+.. image:: images/light_curve_eg.png

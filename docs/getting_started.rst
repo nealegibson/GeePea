@@ -37,9 +37,7 @@ with respect to the parameters::
   gp.optimise() # by default uses the scipy Nelder-Mead simplex fmin
   gp.plot()
 
-And we have our first GP fit to data!
-
-.. plot::
+And we have our first GP fit to data!::
 
   import GeePea
   import numpy as np
@@ -54,10 +52,11 @@ And we have our first GP fit to data!
 
   gp.optimise()
 
-  pylab.figure(1,(6,4))
+  pylab.figure(1,(6,4.8))
 
   gp.plot()
 
   pylab.xlabel('x')
   pylab.ylabel('y')
-
+  
+.. image:: images/getting_started.png

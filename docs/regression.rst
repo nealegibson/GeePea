@@ -45,7 +45,7 @@ Then we can optimise and plot the GP::
   gp.optimise()
   gp.plot()
 
-.. plot::
+::
 
   import GeePea
   import numpy as np
@@ -64,6 +64,8 @@ Then we can optimise and plot the GP::
   #optimise and plot
   gp.optimise()
   gp.plot()
+ 
+.. image:: images/regression1.png
 
 The predictive distribution is only returned for the 6 input data points, and therefore doesn't
 look smooth as it should. We also might want to see how a model behaves further from the inputs.
@@ -82,7 +84,7 @@ can also generate some random draws from the GP, e.g.::
 
   for i in range(3): pylab.plot(gp.xmf_pred, gp.getRandomVector())
 
-.. plot::
+::
 
   import GeePea
   import numpy as np
@@ -110,6 +112,8 @@ can also generate some random draws from the GP, e.g.::
   gp.plot()
 
   for i in range(3): pylab.plot(gp.xmf_pred, gp.getRandomVector())
+
+.. image:: images/regression2.png
 
 .. note::
 

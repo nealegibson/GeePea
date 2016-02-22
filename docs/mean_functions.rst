@@ -62,7 +62,7 @@ We can also plot the current state::
 
   gp.plot()
   
-.. plot::
+::
 
   import GeePea
   import numpy as np
@@ -79,7 +79,9 @@ We can also plot the current state::
   gp.plot()
   
   print "test"
-  
+
+.. image:: images/mean_functions1.png
+
 The red dotted line plots the mean function here. Obviously, the guess parameters do
 not provide a very good fit for our data. Therefore we need to optimise the mean function
 parameters and hyperparameters::
@@ -110,7 +112,7 @@ Now if we optimise the GP only the parameters where fp==0 are allowed to vary.
   guess. Normally full Bayesian inference should be used to get obtain the posterior distribution
   for the variable parameters.
 
-.. plot::
+::
 
   import GeePea
   import numpy as np
@@ -127,3 +129,4 @@ Now if we optimise the GP only the parameters where fp==0 are allowed to vary.
   gp.optimise()
   gp.plot()
 
+.. image:: images/mean_functions2.png
