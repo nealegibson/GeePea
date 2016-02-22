@@ -3,7 +3,7 @@ GeePea: Python module for Gaussian processes
 --------------------------------------------
 
 Neale Gibson
-ngibson@eso.org
+n.gibson@qub.ac.uk
 nealegibby@gmail.com
 
 GeePea module - general Gaussian process regression/fitting module. This is forked from my earlier
