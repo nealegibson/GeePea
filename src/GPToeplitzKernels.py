@@ -61,7 +61,7 @@ ToeplitzSqExponential.kernel_type = 'Toeplitz'
 
 def ToeplitzMatern32(X,Y,theta,white_noise=False):
   r"""
-  Toeplitz Matern 3/2 function - only 1D input therefore 3 accepts 3 parameters. See
+  Toeplitz Matern 3/2 function - only 1D input therefore accepts 3 parameters. See
   GeePea.Matern32 for equivalent full kernel.
 
   .. math::
@@ -91,6 +91,50 @@ def ToeplitzMatern32(X,Y,theta,white_noise=False):
 
   #first calculate distance matrix
   D = np.array(X-Y[0]).flatten() / theta[1]
+
+  #calculate Toeplitz 'matrix' stored as array
+  a = theta[0]**2 * (1 + np.sqrt(3.)*D) * np.exp(-np.sqrt(3.)*D)
+
+  #add white noise
+  if white_noise == True: a[0] += (theta[-1]**2)
+  return a  
+
+ToeplitzMatern32.n_par = 3
+ToeplitzMatern32.kernel_type = 'Toeplitz'
+
+##########################################################################################
+def ToeplitzMatern32_inv(X,Y,theta,white_noise=False):
+  r"""
+  Toeplitz Matern 3/2 function using inverse length scale - only 1D input therefore
+  accepts 3 parameters. See GeePea.Matern32 for equivalent full kernel.
+
+  .. math::
+
+    \Bsig_{ij} = k(\bx_i,\bx_j,\th) =
+    \xi_i^2 \left(1+\sqrt(3)D\right) exp\left( -\sqrt(3)D \right) + \delta_{ij}\sigma^2,
+
+  where :math:`D = (x_{i} - x_{k}) * \eta`, :math:`\th = \{\xi,\eta,\sigma\}`,
+  :math:`\X = \{x_1,\dots,x_n \}^T`, and :math:`\Y = \{y_1,\dots,y_{n^\prime}\}^T`.
+
+  Parameters
+  ----------
+  X : N x 1 matrix of inputs
+  Y : N' x 1 matrix of inputs
+  theta : array of 3 kernel function parameters
+  white_noise : boolean, add white noise to diagonal if True
+
+  Returns
+  -------
+  K : N x N' covariance matrix
+
+  See Also
+  --------
+  Matern32 : Full Matern 3/2 kernel
+
+  """
+
+  #first calculate distance matrix
+  D = np.array(X-Y[0]).flatten() * theta[1]
 
   #calculate Toeplitz 'matrix' stored as array
   a = theta[0]**2 * (1 + np.sqrt(3.)*D) * np.exp(-np.sqrt(3.)*D)
