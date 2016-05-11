@@ -143,7 +143,7 @@ def ToeplitzMatern32_inv(X,Y,theta,white_noise=False):
   if white_noise == True: a[0] += (theta[-1]**2)
   return a  
 
-ToeplitzMatern32.n_par = 3
-ToeplitzMatern32.kernel_type = 'Toeplitz'
+ToeplitzMatern32_inv.n_par = 3
+ToeplitzMatern32_inv.kernel_type = 'Toeplitz'
 
 ##########################################################################################
