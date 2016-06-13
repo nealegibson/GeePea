@@ -207,7 +207,7 @@ class GP(object):
     if mf is not None:
       self.mf = mf
     if xmf is not None: self.xmf = np.array(xmf)
-    if xmf_pred is not None: self.xmf = np.array(xmf_pred)
+    if xmf_pred is not None: self.xmf_pred = np.array(xmf_pred)
 
     #auxiliary parameters
     if n_store is not None:
