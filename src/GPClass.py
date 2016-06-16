@@ -490,7 +490,7 @@ class GP(object):
 
     #need do the regression on the *residual data* if mean funciton exists
     r = self.y - self.mf(self._pars[:self._n_mfp], self.xmf) #subtract the mean function
-
+    
     #and do the regression on the residuals...
     y_pred, y_pred_err = GPR.GPRegress(K_s,PrecMatrix,K_ss,r)
 
@@ -762,7 +762,7 @@ class GP(object):
 
   def CovarianceMatrixCornerToeplitzMult(self,wn=True):
     """return covariance matrix corner for toeplitz kernel, ie predictive points cov with themselves, white noise optional"""
-
+    
     K_ss = GPT.CovarianceMatrixCornerFullToeplitzMult(self._pars[self._n_mfp:],self.x_pred,self.kf,
       self.mf,self._pars[:self._n_mfp],self.xmf_pred,WhiteNoise=wn)
     return K_ss
