@@ -66,12 +66,12 @@ def Optimise(LogLikelihood,par,func_args,fixed=None,type='max',method='NM',maxit
       **add_kwords)
   
   #now return the params in the correct order...
-  if fixed is None:
+  if fixed is None or fixed.sum()==0:
     return_par = fitted_par
   else:
-    return_par = np.copy(par)    
+    return_par = np.copy(par)
     return_par[np.where(fixed!=True)] = fitted_par
-  
+    
   return return_par
 
 ##########################################################################################

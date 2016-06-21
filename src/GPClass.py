@@ -9,6 +9,7 @@ import GPRegression as GPR
 import GPUtils as GPU
 import GPKernelFunctions as GPK
 import Optimiser as OP
+import DifferentialEvolution as DE
 
 #import ToeplitzSolve
 import GPToeplitz as GPT
@@ -558,6 +559,28 @@ class GP(object):
 
   #create alias for optimise function
   opt = optimise
+
+  def opt_global(self,ep=None,bounds=None,**kwargs):
+    """
+    Optimise the parameters of the model - simple wrapper to Infer.Optimise
+    """
+
+    #print "Guess pars:", self._pars
+    if ep is not None: self.ep = ep
+    
+    if bounds is not None:
+      pars = DE.DifferentialEvol(self.logPosterior,self._pars,(),bounds=bounds,**kwargs)
+    else:
+      if self.ep is not None:
+        pars = DE.DifferentialEvol(self.logPosterior,self._pars,(),epar=self.ep,**kwargs)
+      else:
+        raise ValueError("ep is not defined in the GP, therefore ep or bounds must be provided")
+
+    self.pars(pars)
+
+  #create alias for optimise function
+  #dev = opt_global
+  #glob = opt_global
 
   def getRandomVector(self,wn=False):
     "Returns a random vector from the conditioned GP"
