@@ -89,6 +89,7 @@ def DifferentialEvol(LogLikelihood,par,func_args,epar=None,bounds=None,type='max
   #print out results
   if verbose:
     print "No of function evaluations = {}".format(DE.nfev)
+    print "Function value at optimum = {}".format(DE.fun)
     print "DE {} @ {}".format(type,DE.x)
     print "-"*80
   
