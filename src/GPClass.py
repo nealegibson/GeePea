@@ -564,7 +564,7 @@ class GP(object):
     """
     Optimise the parameters of the model - simple wrapper to Infer.Optimise
     """
-
+    
     #print "Guess pars:", self._pars
     if ep is not None: self.ep = ep
     
