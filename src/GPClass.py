@@ -318,7 +318,7 @@ class GP(object):
 
   def mfPars(self):
     "return the mean function parameters"
-    return self._pars[:self.n_hp]
+    return self._pars[:self.n_mfp]
 
   def kfVec(self,i=0):
     "Return the ith vector from the GP input matrix."

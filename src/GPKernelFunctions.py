@@ -343,7 +343,7 @@ def Matern32_inv(X,Y,theta,white_noise=False):
 
     \Bsig_{ij} = k(\bx_i,\bx_j,\th) =
     \xi_i^2 \left(1+\sqrt(3)D\right) exp\left( -\sqrt(3)D \right) + \delta_{ij}\sigma^2,
-
+  
   where :math:`D = \sqrt{\sum_{k=1}^K \frac{1}{l_k^2} (x_{ik} - x_{jk})^2}`,
   :math:`\th = \{\xi_1,l_1,\dots,l_k,\sigma\}`,
   :math:`\X = \{\bx_1,\dots,\bx_n \}^T`,
