@@ -532,11 +532,18 @@ class GP(object):
     #return the predictive mean and variance
     return y_pred, y_pred_err
 
-  def predict(self,x_pred=None,xmf_pred=None,wn=True):
+  def predict(self,x_pred=None,xmf_pred=None,wn=True,p=None):
     """
     Returns the predictive distributions for the GP and current hyperparmeters plus the
     mean function
     """
+
+    #use provided parameters if given
+    if p is not None:
+      assert p.ndim == 1, "p should be 1D of length n_par"
+      assert p.size == self.n_par, "p should be 1D of length n_par"
+      p_save = self.pars()
+      self.pars(p)
 
     #get the predictive distributions for the GP alone
     t_pred, t_pred_err = self.predictGP(x_pred=x_pred,xmf_pred=xmf_pred,wn=wn)
@@ -544,9 +551,41 @@ class GP(object):
     #...and add the predictive mean function back
     t_pred += self.mf(self._pars[:self._n_mfp], self.xmf_pred)
 
+    #and reset p to old values - bit inefficient but need to recode cov calculations otherwise
+    if p is not None:
+      self.pars(p_save)
+    
     #return the predictive mean and variance
     return t_pred, t_pred_err
 
+  def predictSample(self,p,x_pred=None,xmf_pred=None,wn=True,return_all=False):
+    """
+    Return predictive distributions for a collection of samples, p
+    
+    """
+    
+    #check dimensions of p
+    assert p.ndim == 2, "p should be 2 dimensional"
+    assert p.shape[1] == self.n_par, "p should be 2 dimensional, with 2nd dimension n_par"
+    
+    #create storage arrays
+    N = p.shape[0]
+    V,Verr = np.zeros((N,self.xmf_pred.size)),np.zeros((N,self.xmf_pred.size))
+    
+    #get random vectors
+    for i in range(N):
+      V[i],Verr[i] = self.predict(p=p[i],wn=wn,x_pred=x_pred,xmf_pred=xmf_pred)
+    
+    #get mean and standard deviation of the Gaussian mixture model
+    mean = V.mean(axis=0)
+    st_dev = np.sqrt(((V-mean)**2 + Verr**2).mean(axis=0))
+    
+    if return_all:
+      return V,Verr
+    else:
+      #return the predictive mean and variance
+      return mean,st_dev
+      
   def optimise(self,method='NM',fp=None,**kwargs):
     """
     Optimise the parameters of the model - simple wrapper to Infer.Optimise
@@ -582,8 +621,15 @@ class GP(object):
   #dev = opt_global
   #glob = opt_global
 
-  def getRandomVector(self,wn=False):
+  def getRandomVector(self,p=None,wn=False):
     "Returns a random vector from the conditioned GP"
+
+    #use provided parameters if given
+    if p is not None:
+      assert p.ndim == 1, "p should be 1D of length n_par"
+      assert p.size == self.n_par, "p should be 1D of length n_par"
+      p_save = self.pars()
+      self.pars(p)
 
     # #set predictive distributions to the inputs if not set
     # if self.kf_args_pred is None: self.kf_args_pred = self.kf_args
@@ -611,8 +657,52 @@ class GP(object):
     #predictive mean
     m = self.mf(self._pars[:self._n_mfp], self.xmf_pred)
 
+    #and reset p to old values - bit inefficient but need to recode cov calculations otherwise
+    if p is not None:
+      self.pars(p_save)
+    
     return GPU.RandVectorFromConditionedGP(K_s,PrecMatrix,K_ss,r,m=m)
-
+  
+  def getRandomVectors(self,p,wn=False):
+    """
+    Returns a random vectors from the conditioned GP, using a range of parameter arrays
+    
+    p - 2d, N x K array, where N is the number of samples, and K is the number of parameters
+      of the GP
+    wn - include white noise?
+    
+    """
+    
+    #check dimensions of p
+    assert p.ndim == 2, "p should be 2 dimensional"
+    assert p.shape[1] == self.n_par, "p should be 2 dimensional, with 2nd dimension n_par"
+    
+    #create storage array
+    N = p.shape[0]
+    V = np.zeros((N,self.xmf_pred.size))
+    
+    #get random vectors
+    for i in range(N):
+      V[i] = self.getRandomVector(p=p[i],wn=wn)
+          
+    return V
+  
+  def predictDraws(self,p,wn=True):
+    """
+    Returns a random vectors from the conditioned GP, using a range of parameter arrays
+    
+    p - 2d, N x K array, where N is the number of samples, and K is the number of parameters
+      of the GP
+    wn - include white noise?
+    
+    """
+        
+    #get a random draw for each sample
+    V = self.getRandomVectors(p=p,wn=wn)
+    
+    #and return the distribution
+    return V.mean(axis=0),V.std(axis=0)
+    
   def getRandomVectorFromPrior(self,wn=False):
     "Returns a random vector from the GP prior"
 
@@ -629,35 +719,38 @@ class GP(object):
 
     return GPU.RandomVector(K_ss) + self.mf(self._pars[:self._n_mfp], self.xmf_pred)
 
+  #############################################################################################################
+  #quicklook plotting functions
+  
   def plotRanges(self,wn=True,**kwargs):
     """Plots the 1 and 2 sigma range of the GP (but doesn't take into account mean function errors)"""
 
     t_pred,t_pred_err = self.predict(wn=wn)
     GPU.PlotRanges(self.xmf_pred,t_pred,t_pred_err,**kwargs)
-
+  
   def plotData(self,**kwargs):
     """Plots the data with errorbars"""
-
+  
     #set the errors
     err = self._pars[-1]
     #else: err = self._pars[self.n_hp-1]
-
+  
     GPU.PlotData(self.xmf,self.y,np.ones(self.y.size)*err,title=None,**kwargs)
-
+  
   def plotMean(self):
     """Plots the mean function (with predictive arguments)"""
     
     #plot the mean function
     pylab.plot(self.xmf_pred,self.mfEvalPred()*np.ones(self.xmf_pred.size),'r--')
-
+  
   def plot(self,wn=True,**kwargs):
     """Convenience method to call both plotRanges, plotData and plotMean with defaults"""
-
+  
     if self.kernel_type is not 'White' and self.kernel_type is not 'W':
       self.plotRanges(wn=wn)
     self.plotData()
     self.plotMean()
-
+  
   #############################################################################################################
 
   #wrappers for normal covariance matrix functions
