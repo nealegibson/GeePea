@@ -104,39 +104,37 @@ def PlotDensity(x,y,yerr,n=2000,nsig=5.,cmap='gray_r',sm_x=None,supersamp=None):
   
   return IM
 
-def PlotRanges(x,y,y_err,lc='k',ls='-',title=None,lw=2,lw2=-1,c2='0.8',c1='0.6'):
+def PlotRanges(x,y,y_err,lc='k',ls='-',title=None,lw=1,lw2=-1,c2='0.8',c1='0.6',alpha=0.8):
   """
   Plot 1 and 2 sigma range areas for GP regression given x,y values, y_error
   """
   
   ax = pylab.gca()
 
-  ax.plot(x, y, color=lc, linewidth=lw, linestyle=ls) #plot predictive function and ranges
+  ax.plot(x, y, color=lc, linewidth=lw, linestyle=ls,alpha=alpha) #plot predictive function and ranges
   if lw2 < 0: lw2 = lw/2.
   
   y1,y2 = y+2*y_err, y-2*y_err
-  ax.fill_between(x, y1, y2, where=y1>=y2, facecolor=c2,lw=lw2)
+  ax.fill_between(x, y1, y2, where=y1>=y2, facecolor=c2,lw=lw2,alpha=alpha)
+  ax.plot(x,y1,'-',x,y2,'-',color=lc,alpha=alpha,lw=lw2)
   
   y1,y2 = y+1*y_err, y-1*y_err
-  #plot thicker lines for 1sigma lims
-  #ax.plot(x, y1, 'k-', linewidth=2)
-  #ax.plot(x, y2, 'k-', linewidth=2)
+  ax.fill_between(x, y1, y2, where=y1>=y2, facecolor=c1,lw=lw2,alpha=alpha)
+  ax.plot(x,y1,'-',x,y2,'-',color=lc,alpha=alpha,lw=lw2)
   
-  ax.fill_between(x, y1, y2, where=y1>=y2, facecolor=c1,lw=lw2)
-  
-  pylab.plot()
+  #pylab.plot()
   
   if title: pylab.title(title)
 
-def PlotData(x,y,y_err,title=None,**kwargs):
+def PlotData(x,y,y_err,title=None,fmt='o',ms=4,mfc='0.9',mec='k',ecolor='k',alpha=0.8,capsize=2,**kwargs):
   """
-  Plot 1 and 2 sigma range areas for GP regression given x,y values, y_error
+  Plot the data
   """
 
   ax = pylab.gca()
-
-  ax.errorbar(x,y,yerr=y_err,fmt='k.',**kwargs)
-  
+  #ax.errorbar(x,y,yerr=y_err,fmt='ko',fc='r',**kwargs)
+  ax.errorbar(x,y,yerr=y_err,fmt=fmt,ms=ms,mfc=mfc,mec=mec,ecolor=ecolor,\
+    alpha=alpha,capsize=capsize,**kwargs)
   if title: pylab.title(title)
   
   pylab.plot()
