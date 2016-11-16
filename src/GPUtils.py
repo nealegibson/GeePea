@@ -76,11 +76,12 @@ def PlotSigmas(x,y,y_err,nsig=3,color='r',alpha=0.5):
 
 def PlotDensity(x,y,yerr,n=2000,nsig=5.,cmap='gray_r',sm_x=None,supersamp=None):
 
-  if supersamp: #resample the inputs to smooth plot
-    x_new = np.linspace(x.min(),x.max(),x.size*supersamp)
-    y = np.interp(x_new,x,y)
-    yerr = np.interp(x_new,x,yerr)
-    x = x_new
+  #need to resample to a regular spacing
+  if supersamp is None: supersamp = 1
+  x_new = np.linspace(x.min(),x.max(),x.size*supersamp)
+  y = np.interp(x_new,x,y)
+  yerr = np.interp(x_new,x,yerr)
+  x = x_new
   
   #set range of y
   y_lower,y_upper = (y-nsig*yerr).min(),(y+nsig*yerr).max()
