@@ -3,6 +3,11 @@ import numpy as np
 import scipy.linalg as LA
 import pylab
 
+try:
+  import dill
+  dill_available = 'yes'
+except ImportError: dill_available = 'no'
+  
 import GPCovarianceMatrix as GPC
 import GPMultCovarianceMatrix as GPMC
 import GPRegression as GPR
@@ -719,6 +724,17 @@ class GP(object):
 
     return GPU.RandomVector(K_ss) + self.mf(self._pars[:self._n_mfp], self.xmf_pred)
 
+  #############################################################################################################
+  #use dill to save current state of gp
+  def save(self,filename):
+    """Save the current state of the GP to a file using dill"""
+    if not dill_available:
+      print "dill module not available. can't save gp"
+    else:
+      file = open(filename,'w')
+      dill.dump(self,file)
+      file.close()
+  
   #############################################################################################################
   #quicklook plotting functions
   
