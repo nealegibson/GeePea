@@ -40,4 +40,7 @@ gps_copy = dill.load(open('test_save.dat'))
 gps[5].save('test_save.dat')
 gp_copy = dill.load(open('test_save.dat'))
 
+#and one to load from a filename
+gp_copy = GeePea.load('test_save.dat')
+
 os.remove('test_save.dat')

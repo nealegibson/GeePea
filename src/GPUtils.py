@@ -4,8 +4,24 @@ Some non-core utility functions for GPs
 
 import numpy as np
 import pylab
+try:
+  import dill
+  dill_available = 'yes'
+except ImportError: dill_available = 'no'
 
 ####################################################################################################
+
+def load(filename):
+  """
+  Simple function to load a GP from a file using dill
+  """
+  if not dill_available:
+    raise ImportError, "dill module not found. can't load gp"
+  else:
+    file = open(filename,'r')
+    gp = dill.load(file)
+    file.close()
+    return gp  
 
 def RandomVector(K,m=None):
   """
