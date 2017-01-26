@@ -90,7 +90,7 @@ class GP(object):
   """
   
   def __init__(self,x,y,p=None,kf=GPK.SqExponential,n_hp=None,n_mfp=None,kernel_type='Full',gp_type='add',
-    x_pred=None,mf=None,xmf=None,xmf_pred=None,n_store=1,ep=None,fp=None,logPrior=None,yerr=None):
+    x_pred=None,mf=None,xmf=None,xmf_pred=None,n_store=1,ep=None,fp=None,logPrior=None,yerr=None,opt=False):
     """
     Initialise the GP. See class docstring for a description of the inputs.
     
@@ -117,7 +117,10 @@ class GP(object):
     #pass arguments to set_pars function to propertly initialise everything
     self.set_pars(x=x,y=y,p=p,kf=kf,n_hp=n_hp,n_mfp=n_mfp,kernel_type=kernel_type,gp_type=gp_type,
       x_pred=x_pred,mf=mf,xmf=xmf,xmf_pred=xmf_pred,n_store=n_store,ep=ep,fp=fp,logPrior=logPrior,yerr=yerr)
-
+    
+    #run optimiser?
+    if opt: self.opt()
+    
   def set_pars(self,x=None,y=None,p=None,kf=None,n_hp=None,n_mfp=None,kernel_type=None,
     x_pred=None,mf=None,xmf=None,xmf_pred=None,n_store=None,ep=None,fp=None,logPrior=None,yerr=None,gp_type=None):
     """

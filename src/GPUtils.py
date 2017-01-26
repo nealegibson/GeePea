@@ -58,23 +58,27 @@ def RandVectorFromConditionedGP(K_s,PrecMatrix,K_ss,r,m=None):
   
   return RandomVector(K_ss_cond,m=np.array(f_s).flatten()+m)
 
-def PlotRange(ax,x,y,y_err,sigma=1.0,facecolor='0.5'):
+def PlotRange(ax,x,y,y_err,sigma=1.0,facecolor='0.5',alpha=0.6):
   """
   Plot a range 'area' for GP regression given x,y values, y_error and no. sigma
   """
   y1,y2 = y+sigma*y_err, y-sigma*y_err
   
-  ax.fill_between(x, y1, y2, where=y1>=y2, facecolor=facecolor)
+  ax.fill_between(x, y1, y2, where=y1>=y2, facecolor=facecolor,alpha=alpha)
 
 def PlotSigmas(x,y,y_err,nsig=3,color='r',alpha=0.5):
   """
   Plot 1 and 2 sigma range areas for GP regression given x,y values, y_error
   """
+  
+  if type(color) is str: #create list
+    color = [color,]*(nsig+1)
     
+  
   for i in np.arange(-nsig,nsig+1):  
-    pylab.plot(x,y+y_err*i,'-',color=color,alpha=alpha,lw=0.5)
+    pylab.plot(x,y+y_err*i,'-',color=color[np.abs(i)],alpha=alpha,lw=0.5)
 
-def PlotDensity(x,y,yerr,n=2000,nsig=5.,cmap='gray_r',sm_x=None,supersamp=None):
+def PlotDensity(x,y,yerr,n=200,nsig=5.,cmap='gray_r',sm_x=None,supersamp=None,**kwargs):
 
   #need to resample to a regular spacing
   if supersamp is None: supersamp = 1
@@ -86,6 +90,12 @@ def PlotDensity(x,y,yerr,n=2000,nsig=5.,cmap='gray_r',sm_x=None,supersamp=None):
   #set range of y
   y_lower,y_upper = (y-nsig*yerr).min(),(y+nsig*yerr).max()
   y_range = np.linspace(y_lower,y_upper,n)
+  
+  #set image extent
+  x_spacing = x[1]-x[0]
+  y_spacing = y[1]-y[0]
+  extent = [x.min()-x_spacing/2.,x.max()+x_spacing/2., y_range[0]-y_spacing/2.,y_range[-1]+y_spacing/2.]
+  print y_spacing
   
   XX,YY = np.meshgrid(x,y_range)
 
@@ -100,17 +110,17 @@ def PlotDensity(x,y,yerr,n=2000,nsig=5.,cmap='gray_r',sm_x=None,supersamp=None):
   #lowers file size
   MaskedIM = np.ma.masked_where(IM<np.exp(-0.5*nsig**2),IM)
   
-  pylab.imshow(MaskedIM, cmap=cmap, aspect='auto', origin='lower', extent=(x[0], x[-1], \
-    y_lower, y_upper),vmin=np.exp(-0.5*nsig**2),vmax=1,interpolation='gaussian',alpha=1.0)
+  pylab.imshow(MaskedIM, cmap=cmap, aspect='auto', origin='lower', extent=extent, \
+    vmin=np.exp(-0.5*nsig**2),vmax=1,interpolation='gaussian',alpha=1.0,**kwargs)
   
   return IM
 
-def PlotRanges(x,y,y_err,lc='k',ls='-',title=None,lw=1,lw2=-1,c2='0.8',c1='0.6',alpha=0.8):
+def PlotRanges(x,y,y_err,lc='k',ls='-',title=None,lw=1,lw2=-1,c2='0.8',c1='0.6',alpha=0.8,ax=None):
   """
   Plot 1 and 2 sigma range areas for GP regression given x,y values, y_error
   """
   
-  ax = pylab.gca()
+  if ax==None: ax = pylab.gca()
 
   ax.plot(x, y, color=lc, linewidth=lw, linestyle=ls,alpha=alpha) #plot predictive function and ranges
   if lw2 < 0: lw2 = lw/2.
