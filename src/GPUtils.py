@@ -137,12 +137,13 @@ def PlotRanges(x,y,y_err,lc='k',ls='-',title=None,lw=1,lw2=-1,c2='0.8',c1='0.6',
   
   if title: pylab.title(title)
 
-def PlotData(x,y,y_err,title=None,fmt='o',ms=4,mfc='0.9',mec='k',ecolor='k',alpha=0.8,capsize=2,**kwargs):
+def PlotData(x,y,y_err,title=None,fmt='o',ms=4,mfc='0.9',mec='k',ecolor='k',alpha=0.8,capsize=2,ax=None,**kwargs):
   """
   Plot the data
   """
 
-  ax = pylab.gca()
+  if ax==None: ax = pylab.gca()
+
   #ax.errorbar(x,y,yerr=y_err,fmt='ko',fc='r',**kwargs)
   ax.errorbar(x,y,yerr=y_err,fmt=fmt,ms=ms,mfc=mfc,mec=mec,ecolor=ecolor,\
     alpha=alpha,capsize=capsize,**kwargs)

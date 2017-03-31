@@ -756,19 +756,20 @@ class GP(object):
   
     GPU.PlotData(self.xmf,self.y,np.ones(self.y.size)*err,title=None,**kwargs)
   
-  def plotMean(self):
+  def plotMean(self,ax=None):
     """Plots the mean function (with predictive arguments)"""
     
     #plot the mean function
-    pylab.plot(self.xmf_pred,self.mfEvalPred()*np.ones(self.xmf_pred.size),'r--')
+    if ax==None: ax = pylab.gca()
+    ax.plot(self.xmf_pred,self.mfEvalPred()*np.ones(self.xmf_pred.size),'r--')
   
-  def plot(self,wn=True,**kwargs):
+  def plot(self,wn=True,ax=None,**kwargs):
     """Convenience method to call both plotRanges, plotData and plotMean with defaults"""
   
     if self.kernel_type is not 'White' and self.kernel_type is not 'W':
-      self.plotRanges(wn=wn)
-    self.plotData()
-    self.plotMean()
+      self.plotRanges(wn=wn,ax=ax)
+    self.plotData(ax=ax)
+    self.plotMean(ax=ax)
   
   #############################################################################################################
 
