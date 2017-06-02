@@ -741,35 +741,35 @@ class GP(object):
   #############################################################################################################
   #quicklook plotting functions
   
-  def plotRanges(self,wn=True,**kwargs):
+  def plotRanges(self,wn=True,offset=0.,**kwargs):
     """Plots the 1 and 2 sigma range of the GP (but doesn't take into account mean function errors)"""
 
     t_pred,t_pred_err = self.predict(wn=wn)
-    GPU.PlotRanges(self.xmf_pred,t_pred,t_pred_err,**kwargs)
+    GPU.PlotRanges(self.xmf_pred,t_pred+offset,t_pred_err,**kwargs)
   
-  def plotData(self,**kwargs):
+  def plotData(self,offset=0.,**kwargs):
     """Plots the data with errorbars"""
   
     #set the errors
     err = self._pars[-1]
     #else: err = self._pars[self.n_hp-1]
   
-    GPU.PlotData(self.xmf,self.y,np.ones(self.y.size)*err,title=None,**kwargs)
+    GPU.PlotData(self.xmf,self.y+offset,np.ones(self.y.size)*err,title=None,**kwargs)
   
-  def plotMean(self,ax=None):
+  def plotMean(self,offset=0.,ax=None):
     """Plots the mean function (with predictive arguments)"""
     
     #plot the mean function
     if ax==None: ax = pylab.gca()
-    ax.plot(self.xmf_pred,self.mfEvalPred()*np.ones(self.xmf_pred.size),'r--')
+    ax.plot(self.xmf_pred,self.mfEvalPred()*np.ones(self.xmf_pred.size)+offset,'r--')
   
-  def plot(self,wn=True,ax=None,**kwargs):
+  def plot(self,wn=True,ax=None,offset=0.,**kwargs):
     """Convenience method to call both plotRanges, plotData and plotMean with defaults"""
   
     if self.kernel_type is not 'White' and self.kernel_type is not 'W':
-      self.plotRanges(wn=wn,ax=ax)
-    self.plotData(ax=ax)
-    self.plotMean(ax=ax)
+      self.plotRanges(wn=wn,ax=ax,offset=offset)
+    self.plotData(ax=ax,offset=offset)
+    self.plotMean(ax=ax,offset=offset)
   
   #############################################################################################################
 
