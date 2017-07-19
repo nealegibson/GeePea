@@ -532,3 +532,46 @@ def EuclideanDist2(X1,X2,v=None):
   return D2
 
 ####################################################################################################
+
+def Matern32_inv_log(X,Y,theta,white_noise=False):
+  r"""
+  Matern 3/2 kernel function with inverse log length scale parameters for each input dimension.
+
+  .. math::
+
+    \Bsig_{ij} = k(\bx_i,\bx_j,\th) =
+    \xi_i^2 \left(1+\sqrt(3)D\right) exp\left( -\sqrt(3)D \right) + \delta_{ij}\sigma^2,
+  
+  where :math:`D = \sqrt{\sum_{k=1}^K \frac{1}{l_k^2} (x_{ik} - x_{jk})^2}`,
+  :math:`\th = \{\xi_1,l_1,\dots,l_k,\sigma\}`,
+  :math:`\X = \{\bx_1,\dots,\bx_n \}^T`,
+  and :math:`\Y = \{\by_1,\dots,\by_{n^\prime}\}^T`.
+
+  Parameters
+  ----------
+  X : N x K matrix of inputs
+  Y : N' x K matrix of inputs
+  theta : array of K+2 kernel function parameters
+  white_noise : boolean, add white noise to diagonal if True
+
+  Returns
+  -------
+  K : N x N' covariance matrix
+
+  """
+
+  #calculate distance matrix, D = sqrt(sum 1/l_i^2 (x_i - x'_i)^2 )
+  D = EuclideanDist(X,Y,v=(np.exp(np.array(theta[1:-1]))))
+
+  # calculate covariance matrix
+  K = np.exp(2*theta[0]) * (1. + np.sqrt(3.)*D) * np.exp(-np.sqrt(3.)*D)
+
+  #add white noise
+  if white_noise == True: K += np.identity(X[:,0].size) * (theta[2]**2)
+
+  return np.matrix(K)
+#add attributes
+Matern32_inv_log.n_par = lambda D: D+2
+Matern32_inv_log.kernel_type = "Full"
+
+####################################################################################################

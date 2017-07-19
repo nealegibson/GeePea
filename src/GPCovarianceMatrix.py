@@ -3,7 +3,7 @@ Functions to compute the covariance matrix given the data and Kernel Functions
 """
 
 import numpy as np
-from GPKernelFunctions import SqExponentialRad #for default kernel function
+from .GPKernelFunctions import SqExponentialRad #for default kernel function
 
 ####################################################################################################
 

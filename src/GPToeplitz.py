@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+from __future__ import print_function
+
 import numpy as np
 import scipy.linalg as LA
 import ctypes
@@ -201,8 +203,8 @@ if __name__ == '__main__':
   #print the answer from standard/slow inversion
   logdet = np.log(np.linalg.det(LA.toeplitz(a)))
   x = np.mat(LA.toeplitz(a)).I * np.mat(b).T
-  print logdet,"\n",np.mat(x)
+  print (logdet,"\n",np.mat(x))
   
   #and print the LTZ solution
   logdet,x = LTZSolve(a,b)
-  print logdet,"\n",x
+  print (logdet,"\n",x)

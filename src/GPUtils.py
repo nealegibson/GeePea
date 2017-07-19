@@ -2,6 +2,8 @@
 Some non-core utility functions for GPs
 """
 
+from __future__ import print_function
+
 import numpy as np
 import pylab
 try:
@@ -16,7 +18,8 @@ def load(filename):
   Simple function to load a GP from a file using dill
   """
   if not dill_available:
-    raise ImportError, "dill module not found. can't load gp"
+#    raise ImportError, "dill module not found. can't load gp"
+    raise ImportError("dill module not found. can't load gp")
   else:
     file = open(filename,'r')
     gp = dill.load(file)
@@ -95,7 +98,7 @@ def PlotDensity(x,y,yerr,n=200,nsig=5.,cmap='gray_r',sm_x=None,supersamp=None,**
   x_spacing = x[1]-x[0]
   y_spacing = y[1]-y[0]
   extent = [x.min()-x_spacing/2.,x.max()+x_spacing/2., y_range[0]-y_spacing/2.,y_range[-1]+y_spacing/2.]
-  print y_spacing
+  print(y_spacing)
   
   XX,YY = np.meshgrid(x,y_range)
 

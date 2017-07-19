@@ -10,12 +10,12 @@ nealegibby@gmail.com
 
 #from Optimiser import *
 
-from GPClass import GP
-from GPUtils import *
-import GPRegression as GPR
-import GPCovarianceMatrix as GPC
-from GPKernelFunctions import *
-from GPWhiteNoiseKernel import *
-from GPPeriodicKernelFunctions import *
-from GPToeplitz import *
-from GPToeplitzKernels import *
+from .GPClass import GP
+from .GPUtils import *
+from . import GPRegression as GPR
+from . import GPCovarianceMatrix as GPC
+from .GPKernelFunctions import *
+from .GPWhiteNoiseKernel import *
+from .GPPeriodicKernelFunctions import *
+from .GPToeplitz import *
+from .GPToeplitzKernels import *

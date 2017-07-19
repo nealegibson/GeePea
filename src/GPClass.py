@@ -1,4 +1,6 @@
 
+from __future__ import print_function
+
 import numpy as np
 import scipy.linalg as LA
 import pylab
@@ -8,16 +10,16 @@ try:
   dill_available = 'yes'
 except ImportError: dill_available = 'no'
   
-import GPCovarianceMatrix as GPC
-import GPMultCovarianceMatrix as GPMC
-import GPRegression as GPR
-import GPUtils as GPU
-import GPKernelFunctions as GPK
-import Optimiser as OP
-import DifferentialEvolution as DE
+from . import GPCovarianceMatrix as GPC
+from . import GPMultCovarianceMatrix as GPMC
+from . import GPRegression as GPR
+from . import GPUtils as GPU
+from . import GPKernelFunctions as GPK
+from . import Optimiser as OP
+from . import DifferentialEvolution as DE
 
 #import ToeplitzSolve
-import GPToeplitz as GPT
+from . import GPToeplitz as GPT
 
 ###############################################################################################################
 
@@ -152,7 +154,6 @@ class GP(object):
       self.kf = kf
       try:
         kernel_type = kf.kernel_type #overwrite kernel type if given by kernel
-        # print "overwriting default kernel type"
       except: pass
     
     #set kernel type
@@ -189,9 +190,9 @@ class GP(object):
           self.CovMatCornerDiag = self.CovarianceMatrixCornerDiagToeplitzAdd
       #need to add support for multiplicative gp kernels
       elif gp_type == 'mult':
-        print "############################################################"
-        print "# warning: Support for multiplicative GPs is experimental. #"
-        print "############################################################"
+        print("############################################################")
+        print("# warning: Support for multiplicative GPs is experimental. #")
+        print("############################################################")
         if self.kernel_type == 'Full':
           self.CovMat_p = self.CovarianceMatrixMult_p #cov matrix for likelihood calculations
           self.CovMat = self.CovarianceMatrixFullMult #full cov matrix of training data
@@ -240,13 +241,11 @@ class GP(object):
         try: self._n_mfp = self.mf.n_par
         except: pass
         else: pass
-      #else: print "#mf par set from mf.n_par(D)!"
     if self._n_hp is None or kf is not None:
       try: self._n_hp = self.kf.n_par(self.d)
       except:
         try: self._n_hp = self.kf.n_par
         except: pass
-        #else: print "#kf par set from kf.n_par!"
       else: pass
     
     #set number of parameters for kernel and mean function
@@ -261,8 +260,8 @@ class GP(object):
 
     #print warning if mf is set without knowing the number of parameters
     if mf is not None and self._n_mfp is None:
-      print "warning: mean function was changed but n_hp or n_mfp is not set!"
-      print "set one of them via set_pars, or eg set"
+      print ("warning: mean function was changed but n_hp or n_mfp is not set!")
+      print ("set one of them via set_pars, or eg set")
 
     #set kf function args and predictive args
     if self.x_pred is None: self.x_pred = self.x #set x_pred to x if pred not given
@@ -339,23 +338,23 @@ class GP(object):
   def describe(self):
     "Print the attributes of the GP object."
 
-    print "--------------------------------------------------------------------------------"
-    print "GP attributes:"
-    print " Target values y:", self.y.shape #, type(self.y)
-    print " GP input args x:", self.x.shape #, type(self.x)
-    print " Log Prior:", self.logPrior.__name__
-    print " Kernel Function:", self.kf.__name__
-    print " Kernel Type:", self.kernel_type
-    print " Hyperparameters:", self._pars[self._n_mfp:], "(#hp = {})".format(self.n_hp)
-    if self.fp is not None: print " Fixed hyperparameters:", self.fp[self._n_mfp:]
-    print " Mean Function:", self.mf.__name__
-    print " MF args:", np.array(self.xmf).shape #, type(self.xmf)
-    print " MF Parameters:", self._pars[:self.n_mfp], "(#mfp = {})".format(self.n_mfp)
-    if self.fp is not None: print " Fixed MF Parameters:", self.fp[:self.n_mfp]
-    print " Predictive GP args X:", np.array(self.x_pred).shape #, type(self.x_pred)
-    print " Predictive mf args:", np.array(self.xmf_pred).shape #, type(self.xmf_pred)
-    if self.yerr is not None: print " Target values err yerr:", np.array(self.yerr).shape #, type(self.yerr)
-    print "--------------------------------------------------------------------------------"
+    print ("--------------------------------------------------------------------------------")
+    print ("GP attributes:")
+    print (" Target values y:", self.y.shape) #, type(self.y)
+    print (" GP input args x:", self.x.shape) #, type(self.x)
+    print (" Log Prior:", self.logPrior.__name__)
+    print (" Kernel Function:", self.kf.__name__)
+    print (" Kernel Type:", self.kernel_type)
+    print (" Hyperparameters:", self._pars[self._n_mfp:], "(#hp = {})".format(self.n_hp))
+    if self.fp is not None: print (" Fixed hyperparameters:", self.fp[self._n_mfp:])
+    print (" Mean Function:", self.mf.__name__)
+    print (" MF args:", np.array(self.xmf).shape) #, type(self.xmf)
+    print (" MF Parameters:", self._pars[:self.n_mfp], "(#mfp = {})".format(self.n_mfp))
+    if self.fp is not None: print (" Fixed MF Parameters:", self.fp[:self.n_mfp])
+    print (" Predictive GP args X:", np.array(self.x_pred).shape) #, type(self.x_pred)
+    print (" Predictive mf args:", np.array(self.xmf_pred).shape) #, type(self.xmf_pred)
+    if self.yerr is not None: print (" Target values err yerr:", np.array(self.yerr).shape) #, type(self.yerr)
+    print ("--------------------------------------------------------------------------------")
 
   def logLikelihood_cholesky(self,p):
     "Function to calculate the log likeihood"
@@ -512,8 +511,8 @@ class GP(object):
     if xmf_pred is not None: self.xmf_pred = xmf_pred
 
     if self.x is not self.x_pred and (self.kernel_type == 'Toeplitz' or self.kernel_type == 'T'):
-      print "warning: using Toeplitz kernel for prediction only works when step sizes are equal" \
-            " for x and x_pred.\nUse a 'Full' kernel after optimisation for if not."
+      print ("warning: using Toeplitz kernel for prediction only works when step sizes are equal" \
+            " for x and x_pred.\nUse a 'Full' kernel after optimisation for if not.")
 
     #Construct the covariance matrix
     K = self.CovMat()
@@ -599,7 +598,6 @@ class GP(object):
     Optimise the parameters of the model - simple wrapper to Infer.Optimise
     """
 
-    #print "Guess pars:", self._pars
     if fp is not None: self.fp = fp
     pars = OP.Optimise(self.logPosterior,self._pars,(),fixed=self.fp,method='NM',**kwargs)
     self.pars(pars)
@@ -612,7 +610,6 @@ class GP(object):
     Optimise the parameters of the model - simple wrapper to Infer.Optimise
     """
     
-    #print "Guess pars:", self._pars
     if ep is not None: self.ep = ep
     
     if bounds is not None:
@@ -732,7 +729,7 @@ class GP(object):
   def save(self,filename):
     """Save the current state of the GP to a file using dill"""
     if not dill_available:
-      print "dill module not available. can't save gp"
+      print("dill module not available. can't save gp")
     else:
       file = open(filename,'w')
       dill.dump(self,file)
