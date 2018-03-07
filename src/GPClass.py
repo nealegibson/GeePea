@@ -9,7 +9,7 @@ try:
   import dill
   dill_available = 'yes'
 except ImportError: dill_available = 'no'
-  
+
 from . import GPCovarianceMatrix as GPC
 from . import GPMultCovarianceMatrix as GPMC
 from . import GPRegression as GPR
@@ -92,7 +92,7 @@ class GP(object):
   """
   
   def __init__(self,x,y,p=None,kf=GPK.SqExponential,n_hp=None,n_mfp=None,kernel_type='Full',gp_type='add',
-    x_pred=None,mf=None,xmf=None,xmf_pred=None,n_store=1,ep=None,fp=None,logPrior=None,yerr=None,opt=False):
+    x_pred=None,mf=None,xmf=None,xmf_pred=None,n_store=1,ep=None,fp=None,logPrior=None,yerr=None,opt=False,order=None,bounds=None):
     """
     Initialise the GP. See class docstring for a description of the inputs.
     
@@ -115,16 +115,19 @@ class GP(object):
     self.logdetK = [[] for q in range(n_store)]
     self._pars = np.array([])
     self.yerr = yerr
+    self.order = order
+    self.bounds = bounds
 
     #pass arguments to set_pars function to propertly initialise everything
     self.set_pars(x=x,y=y,p=p,kf=kf,n_hp=n_hp,n_mfp=n_mfp,kernel_type=kernel_type,gp_type=gp_type,
-      x_pred=x_pred,mf=mf,xmf=xmf,xmf_pred=xmf_pred,n_store=n_store,ep=ep,fp=fp,logPrior=logPrior,yerr=yerr)
+      x_pred=x_pred,mf=mf,xmf=xmf,xmf_pred=xmf_pred,n_store=n_store,ep=ep,fp=fp,
+      logPrior=logPrior,yerr=yerr,order=order,bounds=bounds)
     
     #run optimiser?
     if opt: self.opt()
     
   def set_pars(self,x=None,y=None,p=None,kf=None,n_hp=None,n_mfp=None,kernel_type=None,
-    x_pred=None,mf=None,xmf=None,xmf_pred=None,n_store=None,ep=None,fp=None,logPrior=None,yerr=None,gp_type=None):
+    x_pred=None,mf=None,xmf=None,xmf_pred=None,n_store=None,ep=None,fp=None,logPrior=None,yerr=None,gp_type=None,order=None,bounds=None):
     """
     Set the parameters of the GP. See class docstring for a description of the inputs.
 
@@ -228,6 +231,8 @@ class GP(object):
     if ep is not None: self.ep = np.array(ep)
     if fp is not None: self.fp = np.array(fp)
     if yerr is not None: self.yerr = np.array(yerr)
+    if order is not None: self.order = np.array(order)
+    if bounds is not None: self.bounds = bounds
 
     #set fixed parameteres if ep set but not fp
     if self.fp is None and self.ep is not None:
@@ -599,21 +604,22 @@ class GP(object):
     """
 
     if fp is not None: self.fp = fp
-    pars = OP.Optimise(self.logPosterior,self._pars,(),fixed=self.fp,method='NM',**kwargs)
+    pars = OP.Optimise(self.logPosterior,self._pars,(),fixed=self.fp,method=method,**kwargs)
     self.pars(pars)
 
   #create alias for optimise function
   opt = optimise
 
-  def opt_global(self,ep=None,bounds=None,**kwargs):
+  def opt_global(self,bounds=None,ep=None,**kwargs):
     """
-    Optimise the parameters of the model - simple wrapper to Infer.Optimise
+    Optimise the parameters of the model - simple wrapper to Differential Evolution optimiser
     """
     
     if ep is not None: self.ep = ep
+    if bounds is not None: self.bounds = bounds
     
-    if bounds is not None:
-      pars = DE.DifferentialEvol(self.logPosterior,self._pars,(),bounds=bounds,**kwargs)
+    if self.bounds is not None:
+      pars = DE.DifferentialEvol(self.logPosterior,self._pars,(),bounds=self.bounds,**kwargs)
     else:
       if self.ep is not None:
         pars = DE.DifferentialEvol(self.logPosterior,self._pars,(),epar=self.ep,**kwargs)

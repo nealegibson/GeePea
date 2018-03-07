@@ -11,6 +11,7 @@ nealegibby@gmail.com
 #from Optimiser import *
 
 from .GPClass import GP
+from .GPCombine import combine
 from .GPUtils import *
 from . import GPRegression as GPR
 from . import GPCovarianceMatrix as GPC

@@ -13,8 +13,9 @@ def CovarianceMatrix(theta,X,KernelFunction=SqExponentialRad):
   X - input matrix (n x D)
   theta - hyperparameter array/list
   K - (n x n) covariance matrix
+  
   """
-
+  
   K = KernelFunction(X,X,theta,white_noise=True)
   
   return np.matrix(K)
