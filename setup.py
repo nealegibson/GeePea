@@ -1,4 +1,4 @@
-from distutils.core import setup, Extension
+from numpy.distutils.core import setup, Extension
 #from setuptools import setup, Extension
 
 setup(
@@ -14,6 +14,7 @@ setup(
   #and extension package for solving toeplitz matrices...
   ext_modules = [
     Extension("GeePea.LevinsonTrenchZoharSolve",sources=["src/LevinsonTrenchZoharSolve.c"]),
+    Extension("GeePea.WaveletLikelihood",sources=["src/WaveletLikelihood/WaveletLikelihood.c","src/WaveletLikelihood/FWT.c"],libraries=['gsl','gslcblas']),
     ]
 
   )

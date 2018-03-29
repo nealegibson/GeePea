@@ -20,3 +20,5 @@ from .GPWhiteNoiseKernel import *
 from .GPPeriodicKernelFunctions import *
 from .GPToeplitz import *
 from .GPToeplitzKernels import *
+from .GPWaveletKernel import *
+

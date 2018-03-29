@@ -1,5 +1,5 @@
 """
-Useful (non-periodic) GP Kernel Functions
+...
 """
 
 import numpy as np
