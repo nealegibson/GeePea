@@ -450,8 +450,8 @@ class GP(object):
     #calculate the residuals
     r = self.y - self.mf(p[:self.n_mfp],self.xmf)
     
-    #get wavelet parameters
-    sig_w,sig_r,gamma = p[self.n_mfp:]
+    #get wavelet parameters - note that the order is different!
+    gamma,sig_r,sig_w = p[self.n_mfp:]
     
     #calculate the log Likelihood
     logP = WaveletLogLikelihood_C(r,r.size,sig_w,sig_r,gamma,0)
