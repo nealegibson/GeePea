@@ -14,7 +14,7 @@ WaveletLogLikelihood_C = ctypes.CDLL('{}/WaveletLikelihood.so'.format(os.path.di
 WaveletLogLikelihood_C.argtypes = [ndpointer(ctypes.c_double),ctypes.c_int,ctypes.c_double,ctypes.c_double,ctypes.c_double,ctypes.c_int]
 WaveletLogLikelihood_C.restype = ctypes.c_double
 
-def Wavelet(yerr,theta):
+def Wavelet(r,theta,verbose=0):
   """
   Special kernel for wavelet methods - identical to white noise with different attributes  
   """

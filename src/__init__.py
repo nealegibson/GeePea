@@ -17,7 +17,8 @@ from . import GPRegression as GPR
 from . import GPCovarianceMatrix as GPC
 from .GPKernelFunctions import *
 from .GPWhiteNoiseKernel import *
-from .GPWaveletKernel import *
 from .GPPeriodicKernelFunctions import *
 from .GPToeplitz import *
 from .GPToeplitzKernels import *
+from .GPWaveletKernel import *
+

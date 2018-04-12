@@ -445,12 +445,8 @@ class GP(object):
     return logP
 
   def logLikelihood_wavelet(self,p):
-    """
-    Function to calculate the wavelet log likeihood
-    Note that the kernel isn't used as only homoskedastic - only the attributes are
-    required to make the same format
-    """
-    
+    "Function to calculate the wavelet log likeihood"
+
     #calculate the residuals
     r = self.y - self.mf(p[:self.n_mfp],self.xmf)
     

@@ -73,7 +73,7 @@ def Optimise(LogLikelihood,par,func_args,fixed=None,type='max',method='NM',maxit
   else:
     return_par = np.copy(par)
     return_par[np.where(fixed!=True)] = fitted_par
-    
+  
   return return_par
 
 ##########################################################################################
