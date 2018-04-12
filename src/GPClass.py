@@ -20,6 +20,8 @@ from . import DifferentialEvolution as DE
 
 #import ToeplitzSolve
 from . import GPToeplitz as GPT
+#and wavelet likelihood
+from GPWaveletKernel import WaveletLogLikelihood_C
 
 ###############################################################################################################
 
@@ -172,6 +174,10 @@ class GP(object):
         self.logLikelihood = self.logLikelihood_white
         if self.yerr is None:
           self.yerr = np.ones(self.n)
+      if self.kernel_type == 'Wavelet' or self.kernel_type == 'Wave':
+        self.logLikelihood = self.logLikelihood_wavelet
+        if self.yerr is None:
+          self.yerr = np.ones(self.n)
     if logPrior is not None:
       self.logPrior = logPrior
     
@@ -292,7 +298,7 @@ class GP(object):
       return np.copy(self._pars)
     else:
       # reset the hash thingy is pars are reset
-      self._pars = np.array(p)
+      self._pars = np.array(p,dtype=np.float64) #ensure float array, otherwise causes weird problems with optimisers!
       self.n_par = self._pars.size
       self.hp_hash[self.si] = hash('') #create empty hash that won't be matched with any pars
       self.choFactor[self.si] = None
@@ -438,6 +444,24 @@ class GP(object):
 
     return logP
 
+  def logLikelihood_wavelet(self,p):
+    """
+    Function to calculate the wavelet log likeihood
+    Note that the kernel isn't used as only homoskedastic - only the attributes are
+    required to make the same format
+    """
+    
+    #calculate the residuals
+    r = self.y - self.mf(p[:self.n_mfp],self.xmf)
+    
+    #get wavelet parameters - note that the order is different!
+    gamma,sig_r,sig_w = p[self.n_mfp:]
+    
+    #calculate the log Likelihood
+    logP = WaveletLogLikelihood_C(r,r.size,sig_w,sig_r,gamma,0)
+    
+    return logP
+  
   @staticmethod #ensure static, so it can redefined using a 'normal' function
   def logPrior(p,nhp):
     """
@@ -602,7 +626,7 @@ class GP(object):
     """
     Optimise the parameters of the model - simple wrapper to Infer.Optimise
     """
-
+    
     if fp is not None: self.fp = fp
     pars = OP.Optimise(self.logPosterior,self._pars,(),fixed=self.fp,method=method,**kwargs)
     self.pars(pars)
@@ -625,7 +649,7 @@ class GP(object):
         pars = DE.DifferentialEvol(self.logPosterior,self._pars,(),epar=self.ep,**kwargs)
       else:
         raise ValueError("ep is not defined in the GP, therefore ep or bounds must be provided")
-
+    
     self.pars(pars)
 
   #create alias for optimise function
@@ -769,7 +793,7 @@ class GP(object):
   def plot(self,wn=True,ax=None,offset=0.,**kwargs):
     """Convenience method to call both plotRanges, plotData and plotMean with defaults"""
   
-    if self.kernel_type is not 'White' and self.kernel_type is not 'W':
+    if self.kernel_type not in ['White','W','Wavelet','Wave']:
       self.plotRanges(wn=wn,ax=ax,offset=offset)
     self.plotData(ax=ax,offset=offset)
     self.plotMean(ax=ax,offset=offset)

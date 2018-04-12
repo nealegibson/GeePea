@@ -128,10 +128,10 @@ class combine(object):
       raise Exception, "Cannot set fixed parameters from gps."
     
     #optimise the logPosterior
-    p = OP.Optimise(self.logPosterior,self._pars,(),fixed=self.fp,method=method,**kwargs)
+    pars = OP.Optimise(self.logPosterior,self._pars,(),fixed=self.fp,method=method,**kwargs)
     
     #set parameters for all gps
-    self.pars(p)
+    self.pars(pars)
       
   #create alias for optimise function
   opt = optimise
@@ -139,6 +139,23 @@ class combine(object):
   def opt_global(self,ep=None,bounds=None,**kwargs):
     "Constructs the bounds parameter array from the individual gps, and calls an optimiser."
     print("Function not yet implemented!")
-    pass
+    
+    if bounds is None:
+      print("trying to set bounds!")
+      #try to set from individual gp bounds
+      try:
+        all_bounds = np.concatenate([gp.bounds for gp in self.gps])
+        order = np.concatenate([gp.order for gp in self.gps])
+        self.bounds = [[],]*(self.p.size)
+        for i in range(self.p.size):
+          self.bounds[i] = all_bounds[np.where(order==i)[0][0]]
+      except:
+        raise Exception, "Cannot set bounds from gps."      
+    else: #set from bound if provided
+      self.bounds = bounds
+    
+    #optimise the logPosterior    
+    pars = DE.DifferentialEvol(self.logPosterior,self._pars,(),bounds=self.bounds,**kwargs)
   
-  
+    #set parameters for all gps
+    self.pars(pars)
