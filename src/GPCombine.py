@@ -4,6 +4,12 @@ from __future__ import print_function
 from . import Optimiser as OP
 from . import DifferentialEvolution as DE
 import numpy as np
+import matplotlib.pyplot as plt
+
+try:
+  import dill
+  dill_available = 'yes'
+except ImportError: dill_available = 'no'
 
 class combine(object):
   """
@@ -46,6 +52,18 @@ class combine(object):
     #set parameters from gps directly
     self.set_pars()
     self.set_epars()
+  
+  def __getitem__(self, key):
+    "Enables the gps to be indexable directly from the object"
+    return self.gps[key]
+
+  def __add__(self,other):
+    "Adding GPs together returns another combined GP object."
+    try: #if both combined gps
+      return combine(self.gps + other.gps)
+    except: pass
+    else: #if 2nd is single gp
+      return combine(self.gps + [other,])
     
   def set_pars(self):
     "Sets the parameters from the individual GPs"
@@ -136,12 +154,23 @@ class combine(object):
   #create alias for optimise function
   opt = optimise
   
+  def opt_ind(self):
+    "Optimse the gps individually. Simply sets parameters in order to get initial guess."
+    
+    #optimise the gps
+    for gp in self.gps:
+      #gp.opt_global()
+      gp.opt()
+    
+    #set the parameters for each individual gp
+    self.set_pars()    
+
+  
   def opt_global(self,ep=None,bounds=None,**kwargs):
     "Constructs the bounds parameter array from the individual gps, and calls an optimiser."
-    print("Function not yet implemented!")
     
     if bounds is None:
-      print("trying to set bounds!")
+      #print("trying to set bounds!")
       #try to set from individual gp bounds
       try:
         all_bounds = np.concatenate([gp.bounds for gp in self.gps])
@@ -159,3 +188,25 @@ class combine(object):
   
     #set parameters for all gps
     self.pars(pars)
+
+  def plot(self,fig=plt.gcf().number,**kwargs):
+    """Convenience method to plot all gps"""
+    
+    f,axes = plt.subplots(len(self.gps),num=fig)
+    
+    for gp,a in zip(self.gps,axes):
+      kwargs['ax'] = a #change axes keyword
+      gp.plot(**kwargs)
+        
+  #use dill to save current state of gp
+  def save(self,filename):
+    """Save the current state of the GP to a file using dill"""
+    if not dill_available:
+      print("dill module not available. can't save gp")
+    else:
+      file = open(filename,'w')
+      dill.dump(self,file)
+      file.close()
+    
+    
+    

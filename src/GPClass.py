@@ -17,6 +17,7 @@ from . import GPUtils as GPU
 from . import GPKernelFunctions as GPK
 from . import Optimiser as OP
 from . import DifferentialEvolution as DE
+from GPCombine import combine as gpCombine
 
 #import ToeplitzSolve
 from . import GPToeplitz as GPT
@@ -127,6 +128,17 @@ class GP(object):
     
     #run optimiser?
     if opt: self.opt()
+  
+  #test some magic commands...
+  
+#  def __repr__(self):
+#    return "GeePea.GP Object {}".format(id(self))
+#  def __str__(self):
+#    return "GeePea.GP Object {}".format(id(self))
+  
+  def __add__(self,other):
+    "Adding GPs together returns combined GP object."
+    return gpCombine([self,other])
     
   def set_pars(self,x=None,y=None,p=None,kf=None,n_hp=None,n_mfp=None,kernel_type=None,
     x_pred=None,mf=None,xmf=None,xmf_pred=None,n_store=None,ep=None,fp=None,logPrior=None,yerr=None,gp_type=None,order=None,bounds=None):
@@ -534,7 +546,11 @@ class GP(object):
 
     if x_pred is not None: self.x_pred = x_pred
     if xmf_pred is not None: self.xmf_pred = xmf_pred
-
+    
+    #return trivial prediction for simple kernels
+    if self.kernel_type in ['White','W','Wavelet','Wave']:
+      return np.zeros(self.xmf_pred.size),np.ones(self.xmf_pred.size)*self._pars[-1]
+    
     if self.x is not self.x_pred and (self.kernel_type == 'Toeplitz' or self.kernel_type == 'T'):
       print ("warning: using Toeplitz kernel for prediction only works when step sizes are equal" \
             " for x and x_pred.\nUse a 'Full' kernel after optimisation for if not.")
