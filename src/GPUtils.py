@@ -26,6 +26,17 @@ def load(filename):
     file.close()
     return gp  
 
+def save(ob,filename):
+  """
+  Simple function to save GP or group to file using dill
+  """
+  if not dill_available:
+    print("dill module not available. can't save gp")
+  else:
+    file = open(filename,'w')
+    dill.dump(ob,file)
+    file.close()
+
 def RandomVector(K,m=None):
   """
   Get a random gaussian vector from the covariance matrix K.
