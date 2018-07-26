@@ -37,7 +37,7 @@ def CovarianceMatrixCornerDiag(theta,X,KernelFunction=SqExponentialRad,WhiteNois
   X - input matrix (q x D) - of training points
   theta - hyperparameter array/list
   K - (q x q) covariance matrix corner block - only diagonal terms are returned
-    (this function needs optimised as it calculates the whole covariance matrix first...)
+    (this function needs to be optimised as it calculates the whole covariance matrix first...)
   """
   
   K = np.diag(np.diag(KernelFunction(X,X,theta,white_noise=WhiteNoise)))

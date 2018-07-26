@@ -17,12 +17,12 @@ from . import GPUtils as GPU
 from . import GPKernelFunctions as GPK
 from . import Optimiser as OP
 from . import DifferentialEvolution as DE
-from GPCombine import combine as gpCombine
+from .GPCombine import combine as gpCombine
 
 #import ToeplitzSolve
 from . import GPToeplitz as GPT
 #and wavelet likelihood
-from GPWaveletKernel import WaveletLogLikelihood_C
+from .GPWaveletKernel import WaveletLogLikelihood_C
 
 ###############################################################################################################
 
@@ -95,7 +95,7 @@ class GP(object):
   """
   
   def __init__(self,x,y,p=None,kf=GPK.SqExponential,n_hp=None,n_mfp=None,kernel_type='Full',gp_type='add',
-    x_pred=None,mf=None,xmf=None,xmf_pred=None,n_store=1,ep=None,fp=None,logPrior=None,yerr=None,opt=False,order=None,bounds=None):
+    x_pred=None,mf=None,xmf=None,xmf_pred=None,n_store=1,ep=None,fp=None,logPrior=None,yerr=None,opt=False,order=None,bounds=None,banded=None):
     """
     Initialise the GP. See class docstring for a description of the inputs.
     
@@ -124,7 +124,7 @@ class GP(object):
     #pass arguments to set_pars function to propertly initialise everything
     self.set_pars(x=x,y=y,p=p,kf=kf,n_hp=n_hp,n_mfp=n_mfp,kernel_type=kernel_type,gp_type=gp_type,
       x_pred=x_pred,mf=mf,xmf=xmf,xmf_pred=xmf_pred,n_store=n_store,ep=ep,fp=fp,
-      logPrior=logPrior,yerr=yerr,order=order,bounds=bounds)
+      logPrior=logPrior,yerr=yerr,order=order,bounds=bounds,banded=banded)
     
     #run optimiser?
     if opt: self.opt()
@@ -141,7 +141,8 @@ class GP(object):
     return gpCombine([self,other])
     
   def set_pars(self,x=None,y=None,p=None,kf=None,n_hp=None,n_mfp=None,kernel_type=None,
-    x_pred=None,mf=None,xmf=None,xmf_pred=None,n_store=None,ep=None,fp=None,logPrior=None,yerr=None,gp_type=None,order=None,bounds=None):
+    x_pred=None,mf=None,xmf=None,xmf_pred=None,n_store=None,ep=None,fp=None,logPrior=None,
+    yerr=None,gp_type=None,order=None,bounds=None,banded=None):
     """
     Set the parameters of the GP. See class docstring for a description of the inputs.
 
@@ -179,6 +180,10 @@ class GP(object):
       #set likelihood from kernel type
       if self.kernel_type == 'Full':
         self.logLikelihood = self.logLikelihood_cholesky
+        if banded: #set up for banded matrix and change likelihood - only affects likelihood
+          self.nbands = banded
+          self.CovMatrixBanded = np.zeros((self.nbands,self.y.size))
+          self.logLikelihood = self.logLikelihood_cholesky_banded
       if self.kernel_type == 'Toeplitz' or self.kernel_type == 'T':
         self.logLikelihood = self.logLikelihood_toeplitz
         self.teop_sol = np.mat(np.empty(self.n)).T
@@ -440,6 +445,46 @@ class GP(object):
     #calculate the log likelihood
     logP = -0.5 * r.T * self.teop_sol - 0.5 * (logdetK + logdetA2) - (r.size/2.) * np.log(2*np.pi)
     
+    return np.float(logP)
+
+  def logLikelihood_cholesky_banded(self,p):
+    """
+    Function to calculate the log likeihood - using banded cholesky factorisation
+    Don't get much speed gains here, despite banded cholesky solve being much quicker
+    I think this is related to creating the banded matrix, probably directly computing
+    it would be much quicker, but would need to rewrite lots of convenience functions.
+    Could be useful to write a custom logLikelihood for specific problems, or if scipy
+    add code to create the banded matrix could speed things up (or if I can find a way
+    to optimise)
+    
+    Finally, and most importantly, truncated matrices aren't necessarily positive semi-D!
+    Often the code will fail if the length scale is long compared to the trucation
+    (as it should, and care should be taken when assuming banded matrices are sparse)
+    
+    """
+
+    #calculate the residuals
+    r = self.y - self.mf(p[:self._n_mfp],self.xmf)
+
+    #ensure r is an (n x 1) column vector
+    r = np.matrix(np.array(r).flatten()).T
+    
+    #check if covariance, chol factor and log det are already calculated and stored
+    new_hash = hash(p[-self.n_hp:].tostring()) # calculate and check the hash
+    if np.any(self.hp_hash == new_hash):
+      useK = np.where(self.hp_hash == new_hash)[0][0]
+    else: #else calculate and store the new hash, cho_factor and logdetK
+      useK = self.si = (self.si+1) % self.n_store #increment the store index number
+      self.CovMatrix = self.CovMat_p(p) #important not to create new memory
+      for iq in range(self.nbands):
+        self.CovMatrixBanded[iq,self.nbands-1-iq:] = np.diag(self.CovMatrix,self.nbands-1-iq)
+      self.choFactor[self.si] = LA.cholesky_banded(self.CovMatrixBanded,lower=False)
+      self.logdetK[self.si] = (2*np.log(self.choFactor[self.si][-1]).sum())
+      self.hp_hash[self.si] = new_hash
+    
+    #calculate the log likelihood
+    logP = -0.5 * r.T * np.mat(LA.cho_solve_banded((self.choFactor[useK],False),r)) - 0.5 * self.logdetK[useK] - (r.size/2.) * np.log(2*np.pi)
+
     return np.float(logP)
 
   def logLikelihood_white(self,p):
@@ -950,3 +995,4 @@ class GP(object):
     return K_ss
 
   #############################################################################################################
+

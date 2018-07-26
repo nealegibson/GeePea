@@ -22,3 +22,4 @@ from .GPToeplitz import *
 from .GPToeplitzKernels import *
 from .GPWaveletKernel import *
 
+from .GPPostDirect import *
