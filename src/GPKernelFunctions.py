@@ -4,6 +4,7 @@ import scipy.spatial
 from scipy.special import gamma,kv
 
 ###################################################################################################
+
 def SqExponential(X,Y,theta,white_noise=False):
   r"""
   Squared exponential kernel function (with length scale for each K inputs in X/Y matrices).
@@ -32,11 +33,66 @@ def SqExponential(X,Y,theta,white_noise=False):
   SqExponentialARD : Squared exponential kernel using inverse length scales
 
   """
+  
+  #make variables global to speed up future calculations (ie so mem already exists)
+  global D2,K,v,Xs,Ys  
+  
+  #Calculate distance matrix with scaling
+  # for sum ( (delta_xi / li)^2 ), simply scale the inputs by 1/li
+  v = 1./np.diag(theta[1:-1])
+  Xs = np.dot(X,v)
+  Ys = np.dot(Y,v)
+  D2 = scipy.spatial.distance.cdist(Xs,Ys,'sqeuclidean')
+  #(this replaces D2 = EuclideanDist2(X,Y,v=1./(np.array(theta[1:-1]))))
+  
+  #calculate covariance matrix
+  K = (theta[0]**2) * np.exp( - 0.5 * D2 )
+  
+  #Add white noise
+  if white_noise == True: np.fill_diagonal(K,np.diag(K)+(theta[-1]**2))
 
+  return K
+#add some attributes
+SqExponential.n_par = lambda D: D+2
+SqExponential.kernel_type = "Full"
+
+
+def SqExponential_old(X,Y,theta,white_noise=False):
+  r"""
+  
+  This is an older, slower version.
+  
+  Squared exponential kernel function (with length scale for each K inputs in X/Y matrices).
+
+  .. math::
+
+    \Bsig_{ij} = k(\bx_i,\bx_j,\th) =
+    \xi^2 exp\left( - \sum_{k=1}^K \frac{(x_{ik} - x_{jk})^2}{2l_k^2} ) \right) + \delta_{ij}\sigma^2,
+
+  where :math:`\th = \{\xi,l_1\dots l_k,\sigma\}`, :math:`\X = \{\bx_1,\dots,\bx_n \}^T`,
+  and :math:`\Y = \{\by_1,\dots,\by_{n^\prime}\}^T`.
+
+  Parameters
+  ----------
+  X : N x K matrix of inputs
+  Y : N' x K matrix of inputs
+  theta : array of K+2 kernel function parameters
+  white_noise : boolean, add white noise to diagonal if True
+
+  Returns
+  -------
+  K : N x N' covariance matrix
+
+  See Also
+  --------
+  SqExponentialARD : Squared exponential kernel using inverse length scales
+
+  """
+  
   #Calculate distance matrix with scaling - multiply each coord by sqrt(eta)
   #n(x_i-x_j)^2 = (sqrt(n)*x_i-sqrt(n)*x_j)^2
   D2 = EuclideanDist2(X,Y,v=1./(np.array(theta[1:-1])))
-
+  
   #Calculate covariance matrix
   K = theta[0]**2 * np.exp( - 0.5 * D2 )
 
@@ -45,8 +101,8 @@ def SqExponential(X,Y,theta,white_noise=False):
 
   return np.matrix(K)
 #add some attributes
-SqExponential.n_par = lambda D: D+2
-SqExponential.kernel_type = "Full"
+SqExponential_old.n_par = lambda D: D+2
+SqExponential_old.kernel_type = "Full"
 
 ###################################################################################################
 def SqExponentialARD(X,Y,theta,white_noise=False):
@@ -87,7 +143,7 @@ def SqExponentialARD(X,Y,theta,white_noise=False):
   D2 = EuclideanDist2(X,Y,v=np.sqrt(np.abs(np.array(theta[1:-1]))))
 
   #Calculate covariance matrix (leave out the factor of 1/2)
-  K = theta[0]**2 * np.exp( -D2 )
+  K = theta[0]**2 * np.exp( - D2 )
 
   #Add white noise
   if white_noise == True: K += np.identity(X[:,0].size) * (theta[-1]**2)
@@ -127,7 +183,7 @@ def SqExponentialARDLog(X,Y,theta,white_noise=False):
   SqExponential : Squared exponential kernel using standard length scales
 
   """
-
+  
   #Calculate distance matrix with scaling - multiply each coord by sqrt(eta)
   #n(x_i-x_j)^2 = (sqrt(n)*x_i-sqrt(n)*x_j)^2
   D2 = EuclideanDist2(X,Y,v=np.sqrt(np.exp(np.array(theta[1:-1]))))
