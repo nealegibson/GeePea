@@ -404,7 +404,7 @@ class GP(object):
 #      self.choFactor[self.si] = LA.cho_factor(self.kf(self.x,self.x,p,white_noise=True),check_finite=False)
 #      self.K = self.kf(self.x,self.x,p,white_noise=True)
 #      self.choFactor[self.si] = LA.cho_factor(self.K,check_finite=False)
-      self.choFactor[self.si] = LA.cho_factor(self.kf(self.x,self.x,p,white_noise=True),check_finite=False)
+      self.choFactor[self.si] = LA.cho_factor(self.kf(self.x,self.x,p[-self.n_hp:],white_noise=True),check_finite=False)
       self.logdetK[self.si] = (2*np.log(np.diag(self.choFactor[self.si][0])).sum())
       self.hp_hash[self.si] = new_hash
         
@@ -480,7 +480,7 @@ class GP(object):
       useK = np.where(self.hp_hash == new_hash)[0][0]
     else: #else calculate and store the new hash, cho_factor and logdetK
       useK = self.si = (self.si+1) % self.n_store #increment the store index number
-      self.CovMatrix = self.kf(self.x,self.x,p,white_noise=True) #important not to create new memory
+      self.CovMatrix = self.kf(self.x,self.x,p[-self.n_hp:],white_noise=True) #important not to create new memory
       for iq in range(self.nbands):
         self.CovMatrixBanded[iq,self.nbands-1-iq:] = np.diag(self.CovMatrix,self.nbands-1-iq)
       self.choFactor[self.si] = LA.cholesky_banded(self.CovMatrixBanded,lower=False,check_finite=False)
