@@ -110,6 +110,56 @@ def SqExponentialARD(X,Y,theta,white_noise=False):
 SqExponentialARD.n_par = lambda D: D+2
 SqExponentialARD.kernel_type = "Full"
 
+def SqExponentialARDLog(X,Y,theta,white_noise=False):
+  r"""
+  
+  Same as SqExponentialARD, only using log inputs
+  
+  .. math::
+
+    \Bsig_{ij} = k(\bx_i,\bx_j,\th) =
+    e^{2\xi} \exp\left( - \sum_{k=1}^K e^{\eta_k} (x_{ik} - x_{jk})^2 \right) + \delta_{ij}\sigma^2,
+
+  where :math:`\th = \{\xi,\eta_1\dots\eta_k,\sigma\}`, :math:`\X = \{\bx_1,\dots,\bx_n \}^T`,
+  and :math:`\Y = \{\by_1,\dots,\by_{n^\prime}\}^T`.
+
+  Parameters
+  ----------
+  X : N x K matrix of inputs
+  Y : N' x K matrix of inputs
+  theta : array of K+2 kernel function parameters
+  white_noise : boolean, add white noise to diagonal if True
+
+  Returns
+  -------
+  K : N x N' covariance matrix
+
+  See Also
+  --------
+  SqExponential : Squared exponential kernel using standard length scales
+
+  """
+  #make variables global to speed up future calculations (ie so mem already exists)
+  global D2,K,v,Xs,Ys  
+  
+  #Calculate distance matrix with scaling
+  # for sum ( eta * (delta_xi)^2 )
+  v = np.sqrt(np.exp(np.diag(theta[1:-1])))
+  Xs = np.dot(X,v)
+  Ys = np.dot(Y,v)
+  D2 = scipy.spatial.distance.cdist(Xs,Ys,'sqeuclidean')
+  
+  #calculate covariance matrix
+  K = np.exp(2.*theta[0]-D2)
+
+  #Add white noise
+  if white_noise == True: np.fill_diagonal(K,np.diag(K)+(theta[-1]**2))
+
+  return K
+#add some attributes
+SqExponentialARDLog.n_par = lambda D: D+2
+SqExponentialARDLog.kernel_type = "Full"
+
 def SqExponential_old(X,Y,theta,white_noise=False):
   r"""
   
@@ -207,7 +257,7 @@ SqExponentialARD_old.n_par = lambda D: D+2
 SqExponentialARD_old.kernel_type = "Full"
 
 ###################################################################################################
-def SqExponentialARDLog(X,Y,theta,white_noise=False):
+def SqExponentialARDLog_old(X,Y,theta,white_noise=False):
   r"""
   
   Same as SqExponentialARD, only using log inputs
@@ -249,8 +299,8 @@ def SqExponentialARDLog(X,Y,theta,white_noise=False):
 
   return np.matrix(K)
 #add some attributes
-SqExponentialARDLog.n_par = lambda D: D+2
-SqExponentialARDLog.kernel_type = "Full"
+SqExponentialARDLog_old.n_par = lambda D: D+2
+SqExponentialARDLog_old.kernel_type = "Full"
 
 ###################################################################################################
 def SqExponentialRad(X,Y,theta,white_noise=False):

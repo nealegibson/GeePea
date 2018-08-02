@@ -117,13 +117,13 @@ def NelderMead(ErrFunc, params0, function_args, maxiter=10000, maxfun=10000, ver
 
   if verbose:
     print ("Running Nelder-Mead simplex algorithm... ")
-    t0 = time.clock()
+    t0 = time.time()
     disp = True
   else:
     disp = False
   params = fmin(ErrFunc, params0, args=function_args,maxiter=maxiter, maxfun=maxfun,disp=disp)
   if verbose:
-    print ("(Time: %f secs)" % (time.clock()-t0))
+    print ("(Time: %f secs)" % (time.time()-t0))
     print ("Optimised parameters: ", params,"\n")
   return params
 
@@ -131,10 +131,10 @@ def Powell(ErrFunc, params0, function_args, verbose=True):
 
   if verbose:
     print ("Running Powell's method minimisation... ")
-    t0 = time.clock()
+    t0 = time.time()
   params = fmin_powell(ErrFunc, params0, args=function_args)
   if verbose:
-    print ("(Time: %f secs)" % (time.clock()-t0))
+    print ("(Time: %f secs)" % (time.time()-t0))
     print ("Optimised parameters: ", params,"\n")
   return params
 
@@ -142,10 +142,10 @@ def ConjugateGradient(ErrFunc, params0, function_args, verbose=True):
 
   if verbose:
     print ("Running conjugate gradient minimisation... ")
-    t0 = time.clock()
+    t0 = time.time()
   params = fmin_cg(ErrFunc, params0, args=function_args)
   if verbose:
-    print ("(Time: %f secs)" % (time.clock()-t0))
+    print ("(Time: %f secs)" % (time.time()-t0))
     print ("Optimised parameters: ", params,"\n")
     
   return params
@@ -154,10 +154,10 @@ def BFGS(ErrFunc, params0, function_args, verbose=True):
 
   if verbose:
     print ("Running BFGS minimisation... ")
-    t0 = time.clock()
+    t0 = time.time()
   params = fmin_bfgs(ErrFunc, params0, args=function_args,full_output=1,gtol=1e-5)
   if verbose:
-    print ("(Time: %f secs)" % (time.clock()-t0))
+    print ("(Time: %f secs)" % (time.time()-t0))
     print ("Optimised parameters: ", params[0],"\n")
     
   return params[0]
@@ -169,11 +169,11 @@ def L_BFGS_B(ErrFunc, params0, function_args, verbose=True, **kw):
   """
   if verbose:
     print ("Running L-BFGS-B minimisation... ")
-    t0 = time.clock()
+    t0 = time.time()
   params,min_val,dict  = fmin_l_bfgs_b(ErrFunc, params0,approx_grad=1, args=function_args, bounds=kw['bounds'])
   print (dict)
   if verbose:
-    print ("(Time: %f secs)" % (time.clock()-t0))
+    print ("(Time: %f secs)" % (time.time()-t0))
     print ("Optimised parameters: ", params,"\n")
     
   return params
