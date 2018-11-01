@@ -61,8 +61,7 @@ class combine(object):
     "Adding GPs together returns another combined GP object."
     try: #if both combined gps
       return combine(self.gps + other.gps)
-    except: pass
-    else: #if 2nd is single gp
+    except:
       return combine(self.gps + [other,])
     
   def set_pars(self):
