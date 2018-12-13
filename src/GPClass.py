@@ -187,6 +187,12 @@ class GP(object):
       if self.kernel_type == 'Toeplitz' or self.kernel_type == 'T':
         self.logLikelihood = self.logLikelihood_toeplitz
         self.teop_sol = np.mat(np.empty(self.n)).T
+        test = np.array(self.x).flatten()
+        test_grad = np.gradient(test)
+        if test.ndim is not 1:
+          print('Toeplitz warning: ndim != 1!')
+        elif not np.allclose(test_grad,test_grad.mean()):
+          print('Toeplitz warning: x not regularly spaced!')
       if self.kernel_type == 'White' or self.kernel_type == 'W':
         self.logLikelihood = self.logLikelihood_white
         if self.yerr is None:
@@ -411,7 +417,7 @@ class GP(object):
     #calculate the log likelihood
 #    logP = -0.5 * r.T * np.mat(LA.cho_solve(self.choFactor[useK],r,check_finite=False)) - 0.5 * self.logdetK[useK] - (r.size/2.) * np.log(2*np.pi)
     logP = -0.5 * np.dot(r.T,LA.cho_solve(self.choFactor[useK],r,check_finite=False)) - 0.5 * self.logdetK[useK] - (r.size/2.) * np.log(2*np.pi)
-    
+        
     return np.float(logP)
 
   def logLikelihood_toeplitz(self,p):
@@ -817,6 +823,48 @@ class GP(object):
 
     return GPU.RandomVector(K_ss) + self.mf(self._pars[:self._n_mfp], self.xmf_pred)
 
+  def getMask(self,N=4.):
+    "Returns a mask rejecting outliers more than N stddevs from the mean"
+    
+    #get predictive distribution
+    f,fe = self.predict()
+    
+    #create mask - True for good points
+    index = (self.y > f-N*fe) * (self.y < f+N*fe)
+    return index
+    
+  def mask(self,N=4):
+    "Reject outliers from GP using getMask"
+    
+    #get outlier mask
+    m = self.getMask(N=N)
+    
+    #filter out the outliers - _pred values will remain the same
+    self.x = self.x[m]
+    self.y = self.y[m]
+    self.xmf = self.xmf[m]
+    if self.yerr is not None: self.yerr = self.yerr[m]
+    
+    #reset the store hashes - need to be recomputed even for same params
+    self.hp_hash = np.empty(self.n_store)
+    
+    #need to reset a few other parameters
+    self.n = self.y.size
+    self.teop_sol = np.mat(np.empty(self.n)).T #space for toeplitz solve
+
+  def replace(self,N=4,noise=True):
+    "Replace outliers using interpolation. Best to use mask, but won't work for toeplitz matricies"
+    
+    #get predictive distribution
+    f,fe = self.predict()
+
+    #get outlier mask
+    m = self.getMask(N=N)
+    
+    #replace outliers using the gp prediction
+    if not noise: fe[~m] = 0.
+    self.y[~m] = np.random.normal(f[~m],fe[~m]) #replace with noisy value from gp prediction
+    
   #############################################################################################################
   #use dill to save current state of gp
   def save(self,filename):

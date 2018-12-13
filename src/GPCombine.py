@@ -188,7 +188,7 @@ class combine(object):
     #set parameters for all gps
     self.pars(pars)
 
-  def plot(self,fig=plt.gcf().number,**kwargs):
+  def plot(self,fig=None,**kwargs):
     """Convenience method to plot all gps"""
     
     f,axes = plt.subplots(len(self.gps),num=fig)
@@ -196,6 +196,8 @@ class combine(object):
     for gp,a in zip(self.gps,axes):
       kwargs['ax'] = a #change axes keyword
       gp.plot(**kwargs)
+
+    return f,axes
         
   #use dill to save current state of gp
   def save(self,filename):
