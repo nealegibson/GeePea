@@ -826,8 +826,8 @@ class GP(object):
   def getMask(self,N=4.):
     "Returns a mask rejecting outliers more than N stddevs from the mean"
     
-    #get predictive distribution
-    f,fe = self.predict()
+    #get predictive distribution - need to overwrite the predictive distributions if different
+    f,fe = self.predict(x_pred=self.x,xmf_pred=self.xmf)
     
     #create mask - True for good points
     index = (self.y > f-N*fe) * (self.y < f+N*fe)
@@ -845,13 +845,19 @@ class GP(object):
     self.xmf = self.xmf[m]
     if self.yerr is not None: self.yerr = self.yerr[m]
     
+    #count number of masked points
+    if hasattr(self,'n_masked'):
+      self.n_masked += (~m).sum()
+    else:
+      self.n_masked = (~m).sum()
+    
     #reset the store hashes - need to be recomputed even for same params
     self.hp_hash = np.empty(self.n_store)
     
     #need to reset a few other parameters
     self.n = self.y.size
     self.teop_sol = np.mat(np.empty(self.n)).T #space for toeplitz solve
-
+    
   def replace(self,N=4,noise=True):
     "Replace outliers using interpolation. Best to use mask, but won't work for toeplitz matricies"
     
@@ -864,6 +870,12 @@ class GP(object):
     #replace outliers using the gp prediction
     if not noise: fe[~m] = 0.
     self.y[~m] = np.random.normal(f[~m],fe[~m]) #replace with noisy value from gp prediction
+    
+    #count number of replaced points
+    if hasattr(self,'n_replaced'):
+      self.n_replaced += (~m).sum()
+    else:
+      self.n_replaced = (~m).sum()
     
   #############################################################################################################
   #use dill to save current state of gp
