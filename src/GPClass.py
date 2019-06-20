@@ -897,11 +897,13 @@ class GP(object):
     t_pred,t_pred_err = self.predict(wn=wn)
     GPU.PlotRanges(self.xmf_pred,t_pred+offset,t_pred_err,**kwargs)
   
-  def plotData(self,offset=0.,**kwargs):
+  def plotData(self,offset=0.,log_err=False,**kwargs):
     """Plots the data with errorbars"""
   
     #set the errors
     err = self._pars[-1]
+    if log_err: err = np.exp(err) #could also add this as a attribute to each kernel!
+    
     #else: err = self._pars[self.n_hp-1]
   
     GPU.PlotData(self.xmf,self.y+offset,np.ones(self.y.size)*err,title=None,**kwargs)
@@ -913,12 +915,12 @@ class GP(object):
     if ax==None: ax = pylab.gca()
     ax.plot(self.xmf_pred,self.mfEvalPred()*np.ones(self.xmf_pred.size)+offset,'r--')
   
-  def plot(self,wn=True,ax=None,offset=0.,**kwargs):
+  def plot(self,wn=True,ax=None,offset=0.,log_err=False,**kwargs):
     """Convenience method to call both plotRanges, plotData and plotMean with defaults"""
   
     if self.kernel_type not in ['White','W','Wavelet','Wave']:
       self.plotRanges(wn=wn,ax=ax,offset=offset)
-    self.plotData(ax=ax,offset=offset)
+    self.plotData(ax=ax,offset=offset,log_err=log_err)
     self.plotMean(ax=ax,offset=offset)
   
   #############################################################################################################
