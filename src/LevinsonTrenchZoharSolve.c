@@ -75,13 +75,13 @@ double LevinsonTrenchZoharSolve(double *r, double *x, double *y, int N)
     
     //calculate a (b is just a reflection of a)
     a[n] = 0.; //need to be clever and do 2 at a time as a[n] depends on a[n-1]
-	for (j=0;j<=(n)>>1;j++){
+	  for (j=0;j<=(n)>>1;j++){
       a_temp = a[j];
       a[j] += (xi * a[n-j]);
       if (j!=(n-j)) a[n-j] += (xi * a_temp);
       }
 
-    //#get new value of e and calculate the log determinan
+    //#get new value of e and calculate the log determinant
     e = e*(1.-(xi*xi));
     log_det += log(e);
     

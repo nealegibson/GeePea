@@ -6,10 +6,12 @@ import numpy as np
 import scipy.linalg as LA
 import ctypes
 from numpy.ctypeslib import ndpointer
+import glob
 import os
 
 #import the c function using ctypes
-LTZSolveC = ctypes.CDLL('{}/LevinsonTrenchZoharSolve.so'.format(os.path.dirname(__file__))).LevinsonTrenchZoharSolve
+lib_file = glob.glob('{}/LevinsonTrenchZoharSolve*'.format(os.path.dirname(__file__)))[0] #find the file
+LTZSolveC = ctypes.CDLL(lib_file).LevinsonTrenchZoharSolve
 #specify the argument and return types
 LTZSolveC.argtypes = [ndpointer(ctypes.c_double),ndpointer(ctypes.c_double),\
     ndpointer(ctypes.c_double),ctypes.c_int]

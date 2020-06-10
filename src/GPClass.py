@@ -320,7 +320,7 @@ class GP(object):
     if p is None:
       return np.copy(self._pars)
     else:
-      # reset the hash thingy is pars are reset
+      # reset the hash thingy if pars are reset
       self._pars = np.array(p,dtype=np.float64) #ensure float array, otherwise causes weird problems with optimisers!
       self.n_par = self._pars.size
       self.hp_hash[self.si] = hash('') #create empty hash that won't be matched with any pars

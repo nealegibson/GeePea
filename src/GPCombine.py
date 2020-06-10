@@ -42,7 +42,7 @@ class combine(object):
       try:
         self.order = [gp.order for gp in gps] #try to set from gp attributes
       except:
-        raise Exception, "order not found within gps"
+        raise Exception("order not found within gps")
     else:
       self.order = order
     self.n = np.concatenate(self.order).max()+1 #get number of parameters
@@ -120,6 +120,9 @@ class combine(object):
   def logPosterior(self,p):
     "Computes the log posterior for each gp, and sums."
     
+    #should compute logPrior first, although usually restricted prior space is covered in
+    #individual priors
+    
     #call logPosterior for each GP using input pars
     logP = np.array([gp.logPosterior(p[ord]) for gp,ord in zip(self.gps,self.order)]).sum()
     
@@ -142,7 +145,7 @@ class combine(object):
       for gp,ord in zip(self.gps,self.order):
         self.fp[ord] = gp.fp #set parameters
     except:
-      raise Exception, "Cannot set fixed parameters from gps."
+      raise Exception("Cannot set fixed parameters from gps.")
     
     #optimise the logPosterior
     pars = OP.Optimise(self.logPosterior,self._pars,(),fixed=self.fp,method=method,**kwargs)
@@ -164,7 +167,6 @@ class combine(object):
     #set the parameters for each individual gp
     self.set_pars()    
 
-  
   def opt_global(self,ep=None,bounds=None,**kwargs):
     "Constructs the bounds parameter array from the individual gps, and calls an optimiser."
     
@@ -178,7 +180,7 @@ class combine(object):
         for i in range(self.p.size):
           self.bounds[i] = all_bounds[np.where(order==i)[0][0]]
       except:
-        raise Exception, "Cannot set bounds from gps."      
+        raise Exception("Cannot set bounds from gps.")
     else: #set from bound if provided
       self.bounds = bounds
     
