@@ -4,10 +4,14 @@ import numpy as np
 import scipy.linalg as LA
 import ctypes
 from numpy.ctypeslib import ndpointer
+import glob
 import os
 
 #import the c function using ctypes
-WaveletLogLikelihood_C = ctypes.CDLL('{}/WaveletLikelihood.so'.format(os.path.dirname(__file__))).WaveletLikelihood_C
+lib_file = glob.glob('{}/WaveletLikelihood*.so'.format(os.path.dirname(__file__)))[0] #find the file
+#print('{}/WaveletLikelihood.so'.format(os.path.dirname(__file__)))
+#WaveletLogLikelihood_C = ctypes.CDLL('{}/WaveletLikelihood.so'.format(os.path.dirname(__file__))).WaveletLikelihood_C
+WaveletLogLikelihood_C = ctypes.CDLL(lib_file).WaveletLikelihood_C
 
 #specify the argument and return types
 #double WaveletLikelihood_C(double* array, int size, double sig_w, double sig_r, double gamma, int verbose)
