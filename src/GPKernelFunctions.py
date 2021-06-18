@@ -5,6 +5,52 @@ from scipy.special import gamma,kv
 
 ###################################################################################################
 
+def SqExponential1D(X,Y,theta,white_noise=False):
+  r"""
+  Squared exponential kernel function for 1D inputs (with length scale for each K inputs in X/Y matrices).
+
+  .. math::
+
+    \Bsig_{ij} = k(\bx_i,\bx_j,\th) =
+    \xi^2 \exp\left( \frac{\Delta x^2}{2l^2} \right) + \delta_{ij}\sigma^2,
+
+  where :math:`\th = \{\xi,l,\sigma\}`, :math:`\X = \{\bx_1,\dots,\bx_n \}^T`,
+  and :math:`\Y = \{\by_1,\dots,\by_{n^\prime}\}^T`.
+
+  Parameters
+  ----------
+  X : N x K matrix of inputs
+  Y : N' x K matrix of inputs
+  theta : array of K+2 kernel function parameters
+  white_noise : boolean, add white noise to diagonal if True
+
+  Returns
+  -------
+  K : N x N' covariance matrix
+
+  See Also
+  --------
+  SqExponential : More general squared exp function for multiple inputs
+
+  """
+    
+  #Calculate distance matrix with scaling
+  #use outer product with subtract to construct array quickly
+  #(strictly speaking only need to create one half of the array, but not easy to do in pure python)
+  D = np.subtract.outer(np.ravel(X)/theta[1],np.ravel(Y)/theta[1]) # delta x/l array, creates array in memory
+  D2 = np.square(D,out=D) #delta x squared
+  
+  #calculate covariance matrix
+  K = (theta[0]**2) * np.exp( - 0.5 * D2 )
+  
+  #Add white noise
+  if white_noise == True: np.fill_diagonal(K,np.diag(K)+(theta[-1]**2))
+
+  return K
+#add some attributes
+SqExponential1D.n_par = lambda D: 3
+SqExponential1D.kernel_type = "Full"
+
 def SqExponential(X,Y,theta,white_noise=False):
   r"""
   Squared exponential kernel function (with length scale for each K inputs in X/Y matrices).

@@ -7,8 +7,8 @@ import pylab
 
 try:
   import dill
-  dill_available = 'yes'
-except ImportError: dill_available = 'no'
+  dill_available = True
+except ImportError: dill_available = False
 
 from . import GPCovarianceMatrix as GPC
 from . import GPMultCovarianceMatrix as GPMC
@@ -94,7 +94,7 @@ class GP(object):
   
   """
   
-  def __init__(self,x,y,p=None,kf=GPK.SqExponential,n_hp=None,n_mfp=None,kernel_type='Full',gp_type='add',
+  def __init__(self,x,y,p=None,kf=None,n_hp=None,n_mfp=None,kernel_type='Full',gp_type='add',
     x_pred=None,mf=None,xmf=None,xmf_pred=None,n_store=1,ep=None,fp=None,logPrior=None,yerr=None,opt=False,order=None,bounds=None,banded=None):
     """
     Initialise the GP. See class docstring for a description of the inputs.
@@ -120,7 +120,11 @@ class GP(object):
     self.yerr = yerr
     self.order = order
     self.bounds = bounds
-
+    
+    if kf is None:
+      if x.ndim==1: kf=GPK.SqExponential1D #use faster 1D version if 1D input
+      else: kf=GPK.SqExponential
+    
     #pass arguments to set_pars function to propertly initialise everything
     self.set_pars(x=x,y=y,p=p,kf=kf,n_hp=n_hp,n_mfp=n_mfp,kernel_type=kernel_type,gp_type=gp_type,
       x_pred=x_pred,mf=mf,xmf=xmf,xmf_pred=xmf_pred,n_store=n_store,ep=ep,fp=fp,

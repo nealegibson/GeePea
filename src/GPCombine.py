@@ -8,8 +8,8 @@ import matplotlib.pyplot as plt
 
 try:
   import dill
-  dill_available = 'yes'
-except ImportError: dill_available = 'no'
+  dill_available = True
+except ImportError: dill_available = False
 
 class combine(object):
   """
