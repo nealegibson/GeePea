@@ -134,7 +134,7 @@ class combine(object):
     #call logPosterior for each GP using input pars
     logP = np.array([gp.logLikelihood(p[ord]) for gp,ord in zip(self.gps,self.order)]).sum()
     
-    return logP + self.logPrior(self._pars)
+    return logP + self.logPrior(p)
   
   def optimise(self,method='NM',**kwargs):
     "Constructs the fixed parameter array from the individual gps, and calls an optimiser."

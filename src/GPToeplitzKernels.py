@@ -60,6 +60,49 @@ def ToeplitzSqExponential(X,Y,theta,white_noise=False):
 ToeplitzSqExponential.n_par = 3
 ToeplitzSqExponential.kernel_type = 'Toeplitz'
 
+def ToeplitzSqExponentialInvLog(X,Y,theta,white_noise=False):
+  r"""
+  Toeplitz squared exponential function with log height scale and inverse length scale
+  GeePea.SqExponential for equivalent full kernel.
+
+  .. math::
+
+    \Bsig_{ij} = k(\bx_i,\bx_j,\th) =
+    \xi^2 exp\left( - \sum_{k=1}^K \eta_k (x_{ik} - x_{jk})^2 \right) + \delta_{ij}\sigma^2,
+
+  where :math:`\th = \{\xi,l,\sigma\}`, :math:`\X = \{x_1,\dots,x_n \}^T`,
+  and :math:`\Y = \{y_1,\dots,y_{n^\prime}\}^T`.
+
+  Parameters
+  ----------
+  X : N x 1 matrix of inputs
+  Y : N' x 1 matrix of inputs
+  theta : array of 3 kernel function parameters
+  white_noise : boolean, add white noise to diagonal if True
+
+  Returns
+  -------
+  K : N x N' covariance matrix
+
+  See Also
+  --------
+  SqExponential : Squared exponential kernel using standard length scales
+
+  """
+
+  #first calculate distance matrix
+  D2 = np.array(np.square(X-Y[0])).flatten()
+  
+  #calculate Toeplitz 'matrix' stored as array
+  a = np.exp( 2*theta[0]- 0.5 * D2 * np.exp(theta[1]) )
+  
+  #add white noise
+  if white_noise == True: a[0] += (theta[-1]**2)
+  return a
+
+ToeplitzSqExponentialInvLog.n_par = 3
+ToeplitzSqExponentialInvLog.kernel_type = 'Toeplitz'
+
 ##########################################################################################
 
 def ToeplitzMatern32(X,Y,theta,white_noise=False):
